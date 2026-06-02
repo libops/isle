@@ -14,13 +14,13 @@ volumes:
   acme-data: {}
   activemq-data: {}
   blazegraph-data: {}
-  cantaloupe-data: {}
   drupal-private-files: {}
   drupal-public-files: {}
   drupal-solr-config: {}
   fcrepo-data: {}
   mariadb-data: {}
   solr-data: {}
+  triplet-cache: {}
 
 secrets:
   # Certificates are only used for development environments.
@@ -83,15 +83,6 @@ services:
     volumes:
       - blazegraph-data:/data:rw
 
-  cantaloupe:
-    <<: *common
-    image: islandora/cantaloupe:${ISLANDORA_TAG}
-    secrets:
-      - source: CERT_PUBLIC_KEY
-      - source: CERT_AUTHORITY
-    volumes:
-      - cantaloupe-data:/data:rw
-
   crayfits:
     <<: *common
     image: islandora/crayfits:${ISLANDORA_TAG}
@@ -120,7 +111,7 @@ services:
     environment:
       DEVELOPMENT_ENVIRONMENT: ${DEVELOPMENT_ENVIRONMENT:-false}
       DRUPAL_DEFAULT_BROKER_URL: tcp://activemq:61613
-      DRUPAL_DEFAULT_CANTALOUPE_URL: ${URI_SCHEME}://${DOMAIN}/cantaloupe/iiif/2
+      DRUPAL_DEFAULT_CANTALOUPE_URL: "${URI_SCHEME}://${DOMAIN}/iiif/3"
       DRUPAL_DEFAULT_CONFIGDIR: /var/www/drupal/config/sync
       DRUPAL_DEFAULT_FCREPO_HOST: fcrepo
       DRUPAL_DEFAULT_FCREPO_PORT: 8080
@@ -332,4 +323,24 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:z
       - ./conf/traefik:/etc/traefik/dynamic:ro
       - acme-data:/acme:rw
+  triplet:
+    <<: *common
+    image: ghcr.io/libops/triplet:v1.1.0@sha256:ebdd90375f515e863a57372940a61a3b071c3bfb3134c699e2b5d726949603c8
+    depends_on:
+      fcrepo:
+        condition: service_healthy
+    environment:
+      TRIPLET_PUBLIC_BASE_URL: https://${DOMAIN}
+    volumes:
+      - drupal-public-files:/public:ro
+      - drupal-private-files:/private:ro
+      - type: volume
+        source: fcrepo-data
+        target: /fcrepo
+        read_only: true
+        volume:
+          subpath: home/data/ocfl-root
+      - ./certs/rootCA.pem:/etc/ssl/certs/lehigh.pem:ro
+      - ./conf/triplet/config.yaml:/etc/triplet/config.yaml:ro
+      - triplet-cache:/var/lib/triplet/cache:rw
 
