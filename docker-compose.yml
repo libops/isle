@@ -1,0 +1,344 @@
+---
+# Common to all services
+x-common: &common
+  restart: unless-stopped
+  tty: true # Required for non-root users with selinux enabled.
+  security_opt:
+    - label=type:container_runtime_t # Required for selinux to access the docker socket and bind mount files.
+  networks:
+    default:
+networks:
+  default:
+
+volumes:
+  acme-data: {}
+  activemq-data: {}
+  blazegraph-data: {}
+  drupal-private-files: {}
+  drupal-public-files: {}
+  drupal-solr-config: {}
+  fcrepo-data: {}
+  mariadb-data: {}
+  solr-data: {}
+  triplet-cache: {}
+
+secrets:
+  # Certificates are only used for development environments.
+  CERT_PUBLIC_KEY:
+    file: ./certs/cert.pem
+  CERT_PRIVATE_KEY:
+    file: ./certs/privkey.pem
+  CERT_AUTHORITY:
+    file: ./certs/rootCA.pem
+  UID:
+    file: ./certs/UID
+  # Production secrets:
+  ACTIVEMQ_PASSWORD:
+    file: "./secrets/ACTIVEMQ_PASSWORD"
+  ACTIVEMQ_WEB_ADMIN_PASSWORD:
+    file: "./secrets/ACTIVEMQ_WEB_ADMIN_PASSWORD"
+  ALPACA_JMS_PASSWORD:
+    file: "./secrets/ACTIVEMQ_PASSWORD"
+  DB_ROOT_PASSWORD:
+    file: "./secrets/DB_ROOT_PASSWORD"
+  DRUPAL_DEFAULT_ACCOUNT_PASSWORD:
+    file: "./secrets/DRUPAL_DEFAULT_ACCOUNT_PASSWORD"
+  DRUPAL_DEFAULT_DB_PASSWORD:
+    file: "./secrets/DRUPAL_DEFAULT_DB_PASSWORD"
+  DRUPAL_DEFAULT_SALT:
+    file: "./secrets/DRUPAL_DEFAULT_SALT"
+  FCREPO_DB_PASSWORD:
+    file: "./secrets/FCREPO_DB_PASSWORD"
+  JWT_ADMIN_TOKEN:
+    file: "./secrets/JWT_ADMIN_TOKEN"
+  JWT_PUBLIC_KEY:
+    file: "./secrets/JWT_PUBLIC_KEY"
+  JWT_PRIVATE_KEY:
+    file: "./secrets/JWT_PRIVATE_KEY"
+
+services:
+  activemq:
+    <<: *common
+    image: libops/activemq:5@sha256:0a9f9e4593d6c5aa277409a45edebe6f19e4da8313a4b233dc69022b3d43edcc
+    secrets:
+      - source: ACTIVEMQ_PASSWORD
+      - source: ACTIVEMQ_WEB_ADMIN_PASSWORD
+    volumes:
+      - activemq-data:/opt/activemq/data:rw
+
+  alpaca:
+    <<: *common
+    depends_on:
+      activemq:
+        condition: service_healthy
+    image: libops/alpaca:2.4.0@sha256:1b0a77edac0c4ab9e6c4b9de50778237b9acfb7673cda008fa2fe31fc4fc1c9f
+    secrets:
+      - source: ALPACA_JMS_PASSWORD
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+
+  blazegraph:
+    <<: *common
+    image: libops/blazegraph@sha256:7f4c0b54d9ef0f0822913559d57498e8de2774cadb664161cfe32f40650d8fc0
+    volumes:
+      - blazegraph-data:/data:rw
+
+  crayfits:
+    <<: *common
+    image: libops/crayfits@sha256:4e0d27cd95c9776ccf0d682804aa34a79d1c815304b1521c0d120c7470e2341c
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+      - source: JWT_ADMIN_TOKEN
+      - source: JWT_PUBLIC_KEY
+
+  drupal:
+    <<: *common
+    build:
+      args:
+        BASE_IMAGE: libops/islandora:php83
+      context: ./drupal
+      pull: true
+      x-bake:
+        cache-from:
+          - type=registry,ref=libops/islandora:php83
+        cache-to:
+          - type=inline
+        platforms:
+          - linux/amd64
+          - linux/arm64
+    environment:
+      DEVELOPMENT_ENVIRONMENT: ${DEVELOPMENT_ENVIRONMENT:-false}
+      DRUPAL_DEFAULT_BROKER_URL: tcp://activemq:61613
+      DRUPAL_DEFAULT_CANTALOUPE_URL: "${URI_SCHEME}://${DOMAIN}/iiif/3"
+      DRUPAL_DEFAULT_CONFIGDIR: /var/www/drupal/config/sync
+      DRUPAL_DEFAULT_FCREPO_HOST: fcrepo
+      DRUPAL_DEFAULT_FCREPO_PORT: 8080
+      DRUPAL_DEFAULT_FCREPO_URL: ${URI_SCHEME}://fcrepo.${DOMAIN}/fcrepo/rest/
+      DRUPAL_DEFAULT_INSTALL_EXISTING_CONFIG: "true"
+      DRUPAL_DEFAULT_NAME: Islandora Digital Collections
+      DRUPAL_DEFAULT_PROFILE: minimal
+      DRUPAL_DEFAULT_SITE_URL: ${DOMAIN}
+      DRUPAL_DEFAULT_SOLR_CORE: default
+      DRUPAL_ENABLE_HTTPS: "false"
+      DRUSH_OPTIONS_URI: ${URI_SCHEME}://${DOMAIN}
+      NGINX_REAL_IP_RECURSIVE: ${REVERSE_PROXY}
+      NGINX_SET_REAL_IP_FROM: ${FRONTEND_IP_1}
+      NGINX_SET_REAL_IP_FROM2: ${FRONTEND_IP_2}
+      NGINX_SET_REAL_IP_FROM3: ${FRONTEND_IP_3}
+    healthcheck:
+      start_period: ${DRUPAL_HEALTHCHECK_START_PERIOD:-0s}
+      retries: ${DRUPAL_HEALTHCHECK_RETRIES:-3}
+    image: libops/islandora:php83
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+      - source: UID
+      - source: DB_ROOT_PASSWORD
+      - source: DRUPAL_DEFAULT_ACCOUNT_PASSWORD
+      - source: DRUPAL_DEFAULT_DB_PASSWORD
+      - source: DRUPAL_DEFAULT_SALT
+      - source: JWT_PRIVATE_KEY
+      - source: JWT_PUBLIC_KEY
+    volumes:
+      - read_only: false
+        source: drupal-public-files
+        target: /var/www/drupal/web/sites/default/files
+        type: volume
+      - read_only: false
+        source: drupal-private-files
+        target: /var/www/drupal/private
+        type: volume
+      - drupal-solr-config:/opt/solr/server/solr/default:z,rw
+
+  fcrepo:
+    <<: *common
+    depends_on:
+      activemq:
+        condition: service_healthy
+    environment:
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      FCREPO_ALLOW_EXTERNAL_DEFAULT: http://default/
+      FCREPO_ALLOW_EXTERNAL_DRUPAL: ${URI_SCHEME}://${DOMAIN}/
+      FCREPO_PERSISTENCE_TYPE: mysql
+    image: libops/fcrepo@sha256:611b9b15bf205c369aa664d119126429785da28d255635d8aeeb29ddf4ce03f0
+    secrets:
+      - source: DB_ROOT_PASSWORD
+      - source: FCREPO_DB_PASSWORD
+      - source: JWT_ADMIN_TOKEN
+      - source: JWT_PUBLIC_KEY
+    volumes:
+      - fcrepo-data:/data:rw
+
+  fits:
+    <<: *common
+    image: libops/fits@sha256:f945c3aa9b1011261a038d6a2a1ddc7557d1d0c59e00add9a82a47334e78b76f
+
+  homarus:
+    <<: *common
+    image: libops/homarus@sha256:6668319f8a796af81857afb1bd415589d771f731a98668d7f7441ed264591ded
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+      - source: JWT_ADMIN_TOKEN
+      - source: JWT_PUBLIC_KEY
+
+  houdini:
+    <<: *common
+    image: libops/houdini@sha256:dfac6017c31660b28fdc0d441ab053297450aba5b1a3016e0943353b5d0cd33b
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+      - source: JWT_ADMIN_TOKEN
+      - source: JWT_PUBLIC_KEY
+
+  hypercube:
+    <<: *common
+    image: libops/hypercube@sha256:3909994ca3849eacfa4974d63517e9bf4ca91a8519461618bbb87f6a8c01cb35
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+      - source: JWT_ADMIN_TOKEN
+      - source: JWT_PUBLIC_KEY
+
+  init:
+    entrypoint: /scripts/init-entrypoint.sh
+    image: libops/base@sha256:4a8d3997ac565981cd91ca36fd5a2b64955bac8d78a3632abd5a7137609be631
+    networks:
+      default:
+    profiles:
+      - none
+    restart: "no"
+    security_opt:
+      - label=type:container_runtime_t
+    volumes:
+      - ./.env:/.env
+      - ./certs:/certs:rw
+      - ./secrets:/secrets:rw
+      - ./scripts:/scripts:ro
+      - ./docker-compose.yml:/docker-compose.yml:ro
+      - ./drupal:/drupal:rw
+      - /var/run/docker.sock:/var/run/docker.sock:z
+
+  mariadb:
+    <<: *common
+    image: libops/mariadb:11@sha256:df935aa57a4444a1bd9024afdf8b3d78abfdfa2c4662320badd099fa6193de6b
+    secrets:
+      - source: DB_ROOT_PASSWORD
+    volumes:
+      - mariadb-data:/var/lib/mysql:rw
+
+  mergepdf:
+    <<: *common
+    image: islandora/mergepdf:main@sha256:19ed2d048abbe548f9bad07712547678b06dc33f7a066bc14358bdef3b9c93f7
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+      - source: JWT_ADMIN_TOKEN
+      - source: JWT_PUBLIC_KEY
+
+  milliner:
+    <<: *common
+    environment:
+      MILLINER_FEDORA6: true
+    image: islandora/milliner:2.0.0@sha256:95fab40eb4a60c87572949d8b79d8b9552ec70e6f225c571bbd8817e55a8807f
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+      - source: JWT_ADMIN_TOKEN
+      - source: JWT_PUBLIC_KEY
+
+  solr:
+    <<: *common
+    depends_on:
+      drupal:
+        condition: service_healthy
+    image: libops/solr:9@sha256:da3127bddee9404e6428f8fb927d63a68ee93476022de96c021dffaea78b3537
+    volumes:
+      - solr-data:/data:rw
+      - read_only: false
+        source: drupal-solr-config
+        target: /opt/solr/server/solr/default
+        type: volume
+        volume:
+          nocopy: true
+
+  traefik:
+    <<: *common
+    command: >-
+      --ping=true
+      --log.level=INFO
+      --entryPoints.http.address=:80
+      --entryPoints.http.forwardedHeaders.trustedIPs=${FRONTEND_IP_1},${FRONTEND_IP_2},${FRONTEND_IP_3}
+      --entryPoints.http.http.encodedCharacters.allowEncodedSlash=true
+      --entryPoints.http.http.encodedCharacters.allowEncodedPercent=true
+      --entryPoints.http.http.encodedCharacters.allowEncodedQuestionMark=true
+      --entryPoints.http.http.encodedCharacters.allowEncodedHash=true
+      --entryPoints.http.transport.respondingTimeouts.readTimeout=60
+      --entryPoints.https.address=:443
+      --entryPoints.https.forwardedHeaders.trustedIPs=${FRONTEND_IP_1},${FRONTEND_IP_2},${FRONTEND_IP_3}
+      --entryPoints.https.http.encodedCharacters.allowEncodedSlash=true
+      --entryPoints.https.http.encodedCharacters.allowEncodedPercent=true
+      --entryPoints.https.http.encodedCharacters.allowEncodedQuestionMark=true
+      --entryPoints.https.http.encodedCharacters.allowEncodedHash=true
+      --entryPoints.https.transport.respondingTimeouts.readTimeout=60
+      --providers.file.directory=/etc/traefik/dynamic
+      --providers.docker=true
+      --providers.docker.network=default
+      --providers.docker.exposedByDefault=false
+      --api.insecure=${DEVELOPMENT_ENVIRONMENT:-false}
+      --api.dashboard=${DEVELOPMENT_ENVIRONMENT:-false}
+      --api.debug=${DEVELOPMENT_ENVIRONMENT:-false}
+    depends_on:
+      drupal:
+        condition: service_healthy
+    environment:
+      DEVELOPMENT_ENVIRONMENT: ${DEVELOPMENT_ENVIRONMENT:-false}
+      DOMAIN: ${DOMAIN}
+      TLS_PROVIDER: ${TLS_PROVIDER:-self-managed}
+      URI_SCHEME: ${URI_SCHEME:-http}
+    healthcheck:
+      start_period: 10s
+      test: traefik healthcheck --ping
+    image: traefik:v3.6.13@sha256:5e113a222e0a43c112bd8caeb0dfb42685be2c2eb190c79176c99c1259e4fa10
+    networks:
+      default:
+        aliases:
+          - activemq.${DOMAIN}
+          - blazegraph.${DOMAIN}
+          - fcrepo.${DOMAIN}
+          - ${DOMAIN}
+          - solr.${DOMAIN}
+    ports:
+      - ${HOST_INSECURE_PORT:-80}:80
+      - ${HOST_SECURE_PORT:-443}:443
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_PRIVATE_KEY
+    security_opt:
+      - label=type:container_runtime_t
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:z
+      - ./conf/traefik:/etc/traefik/dynamic:ro
+      - acme-data:/acme:rw
+  triplet:
+    <<: *common
+    image: ghcr.io/libops/triplet:v1.1.0@sha256:ebdd90375f515e863a57372940a61a3b071c3bfb3134c699e2b5d726949603c8
+    depends_on:
+      fcrepo:
+        condition: service_healthy
+    environment:
+      TRIPLET_PUBLIC_BASE_URL: https://${DOMAIN}
+    volumes:
+      - drupal-public-files:/public:ro
+      - drupal-private-files:/private:ro
+      - type: volume
+        source: fcrepo-data
+        target: /fcrepo
+        read_only: true
+        volume:
+          subpath: home/data/ocfl-root
+      - ./certs/rootCA.pem:/etc/ssl/certs/lehigh.pem:ro
+      - ./conf/triplet/config.yaml:/etc/triplet/config.yaml:ro
+      - triplet-cache:/var/lib/triplet/cache:rw
