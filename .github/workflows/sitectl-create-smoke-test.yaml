@@ -1,0 +1,38 @@
+name: sitectl-create-smoke-test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sitectl-create-smoke-test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  create:
+    name: sitectl create isle ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: fcrepo-on-blazegraph-on
+            create_definition: default
+            create_args: "--fcrepo on --blazegraph on --isle-file-system-uri public --iiif triplet --iiif-topology disabled --bot-mitigation off"
+          - label: fcrepo-off-blazegraph-on
+            create_definition: default
+            create_args: "--fcrepo off --blazegraph on --isle-file-system-uri public --iiif triplet --iiif-topology disabled --bot-mitigation off"
+          - label: fcrepo-off-blazegraph-off-bot-mitigation-on
+            create_definition: default
+            create_args: "--fcrepo off --blazegraph off --isle-file-system-uri private --iiif triplet --iiif-topology disabled --bot-mitigation on"
+    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@main
+    with:
+      plugin: isle
+      create-definition: ${{ matrix.create_definition }}
+      create-args: ${{ matrix.create_args }}
+      run-verify: true
+      verify-args: ${{ matrix.create_args }} --demo-objects
+      packages: sitectl sitectl-isle sitectl-drupal
