@@ -13,12 +13,12 @@ networks:
 volumes:
   acme-data: {}
   activemq-data: {}
-  cantaloupe-data: {}
   drupal-private-files: {}
   drupal-public-files: {}
   drupal-solr-config: {}
   mariadb-data: {}
   solr-data: {}
+  triplet-cache: {}
 
 secrets:
   # Certificates are only used for development environments.
@@ -106,7 +106,7 @@ services:
     environment:
       DEVELOPMENT_ENVIRONMENT: ${DEVELOPMENT_ENVIRONMENT:-false}
       DRUPAL_DEFAULT_BROKER_URL: tcp://activemq:61613
-      DRUPAL_DEFAULT_CANTALOUPE_URL: "${URI_SCHEME}://${DOMAIN}/cantaloupe/iiif/2"
+      DRUPAL_DEFAULT_CANTALOUPE_URL: "${URI_SCHEME}://${DOMAIN}/iiif/3"
       DRUPAL_DEFAULT_CONFIGDIR: /var/www/drupal/config/sync
       DRUPAL_DEFAULT_INSTALL_EXISTING_CONFIG: "true"
       DRUPAL_DEFAULT_NAME: Islandora Digital Collections
@@ -296,11 +296,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:z
       - ./conf/traefik:/etc/traefik/dynamic:ro
       - acme-data:/acme:rw
-  cantaloupe:
+  triplet:
     <<: *common
-    image: islandora/cantaloupe:${ISLANDORA_TAG}
-    secrets:
-      - source: CERT_PUBLIC_KEY
-      - source: CERT_AUTHORITY
+    image: ghcr.io/libops/triplet:v1.1.0@sha256:ebdd90375f515e863a57372940a61a3b071c3bfb3134c699e2b5d726949603c8
+    environment:
+      TRIPLET_PUBLIC_BASE_URL: ${URI_SCHEME:-http}://${DOMAIN}
+      DOMAIN: ${URI_SCHEME:-http}://${DOMAIN}
     volumes:
-      - cantaloupe-data:/data:rw
+      - drupal-public-files:/public:ro
+      - drupal-private-files:/private:ro
+      - ./certs/rootCA.pem:/etc/ssl/certs/lehigh.pem:ro
+      - ./conf/triplet/config.yaml:/etc/triplet/config.yaml:ro
+      - triplet-cache:/var/lib/triplet/cache:rw
