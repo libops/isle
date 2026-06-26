@@ -17,6 +17,7 @@ RUN --mount=type=cache,id=custom-islandora-composer-${TARGETARCH},sharing=locked
 COPY --link config/ /var/www/drupal/config/
 COPY --link web/modules/custom/ /var/www/drupal/web/modules/custom/
 COPY --link web/themes/custom/ /var/www/drupal/web/themes/custom/
+COPY --link rootfs/etc/ /etc/
 COPY --link rootfs/opt/ /opt/
 
 ENV \

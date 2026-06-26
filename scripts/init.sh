@@ -36,8 +36,25 @@ if command -v "sestatus" >/dev/null; then
   fi
 fi
 
-docker compose run --rm init
+host_uid="$(id -u)"
+host_gid="$(id -g)"
 
-chown -R "$(whoami)" ./certs ./secrets > /dev/null 2>&1 || sudo chown -R "$(whoami)" ./certs ./secrets
+docker compose run --rm \
+  -e HOST_UID="${host_uid}" \
+  -e HOST_GID="${host_gid}" \
+  init
+
+if [ "${host_uid}" -eq 0 ]; then
+  chown -R "${host_uid}:${host_gid}" ./certs ./secrets
+else
+  unowned_path="$(find ./certs ./secrets ! -user "${host_uid}" -print -quit)"
+  if [ -n "${unowned_path}" ]; then
+    if command -v sudo > /dev/null 2>&1 && sudo -n true 2> /dev/null; then
+      sudo chown -R "${host_uid}:${host_gid}" ./certs ./secrets
+    else
+      echo "Could not change certs/secrets ownership without sudo; continuing after container-side ownership fix." >&2
+    fi
+  fi
+fi
 
 make build

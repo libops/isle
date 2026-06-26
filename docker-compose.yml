@@ -242,7 +242,7 @@ services:
     <<: *common
     environment:
       MILLINER_FEDORA6: true
-    image: islandora/milliner:2.0.0@sha256:95fab40eb4a60c87572949d8b79d8b9552ec70e6f225c571bbd8817e55a8807f
+    image: islandora/milliner:2.0.0@sha256:95fab40f0249a07ae520b9de98a39a66955698a7e0a7145d0c651fdf8bf0b948
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY

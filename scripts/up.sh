@@ -48,8 +48,13 @@ if [ "$FINAL_PORT" != "$DEFAULT_P" ]; then
     URL="$URL:$FINAL_PORT"
 fi
 
-export MAX_RETRIES=3
-WAIT_FOR_INSTALL=$(./scripts/ping.sh || echo "yes")
+skip_public_ping="${SKIP_PUBLIC_PING:-false}"
+if [ "${skip_public_ping}" = "true" ]; then
+    WAIT_FOR_INSTALL="yes"
+else
+    export MAX_RETRIES=3
+    WAIT_FOR_INSTALL=$(./scripts/ping.sh || echo "yes")
+fi
 if [ "$WAIT_FOR_INSTALL" = "yes" ]; then
     echo "Site install in progress..."
     docker compose logs -f --since 20s drupal 2>&1 | { \
@@ -66,7 +71,9 @@ fi
 # The Drupal install log line can arrive slightly before Traefik can proxy a
 # successful request to the backend, so do one final readiness check before
 # announcing the URL or opening the browser.
-./scripts/ping.sh > /dev/null 2>&1
+if [ "${skip_public_ping}" != "true" ]; then
+    MAX_RETRIES="${POST_INSTALL_MAX_RETRIES:-12}" ./scripts/ping.sh > /dev/null 2>&1
+fi
 
 echo "---------------------------------------------------"
 echo "🚀 Site available at: $URL"
