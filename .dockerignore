@@ -1,0 +1,9 @@
+.git
+.cache
+certs
+secrets
+vendor
+web/core
+web/modules/contrib
+web/themes/contrib
+drupal/rootfs/var/www/drupal

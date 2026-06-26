@@ -77,20 +77,14 @@ services:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
 
+    environment:
+      ALPACA_FCREPO_INDEXER_ENABLED: "true"
+      ALPACA_TRIPLESTORE_INDEXER_ENABLED: "true"
   blazegraph:
     <<: *common
     image: islandora/blazegraph:${ISLANDORA_TAG}
     volumes:
       - blazegraph-data:/data:rw
-
-  cantaloupe:
-    <<: *common
-    image: islandora/cantaloupe:${ISLANDORA_TAG}
-    secrets:
-      - source: CERT_PUBLIC_KEY
-      - source: CERT_AUTHORITY
-    volumes:
-      - cantaloupe-data:/data:rw
 
   crayfits:
     <<: *common
@@ -107,7 +101,7 @@ services:
       args:
         REPOSITORY: islandora
         TAG: ${ISLANDORA_TAG}
-      context: ./drupal
+      context: .
       x-bake:
         cache-from:
           - type=registry,ref=${REPOSITORY}/${COMPOSE_PROJECT_NAME}:${TAG}
@@ -120,7 +114,7 @@ services:
     environment:
       DEVELOPMENT_ENVIRONMENT: ${DEVELOPMENT_ENVIRONMENT:-false}
       DRUPAL_DEFAULT_BROKER_URL: tcp://activemq:61613
-      DRUPAL_DEFAULT_CANTALOUPE_URL: ${URI_SCHEME}://${DOMAIN}/cantaloupe/iiif/2
+      DRUPAL_DEFAULT_CANTALOUPE_URL: "${URI_SCHEME}://${DOMAIN}/cantaloupe/iiif/2"
       DRUPAL_DEFAULT_CONFIGDIR: /var/www/drupal/config/sync
       DRUPAL_DEFAULT_FCREPO_HOST: fcrepo
       DRUPAL_DEFAULT_FCREPO_PORT: 8080
@@ -136,6 +130,7 @@ services:
       NGINX_SET_REAL_IP_FROM: ${FRONTEND_IP_1}
       NGINX_SET_REAL_IP_FROM2: ${FRONTEND_IP_2}
       NGINX_SET_REAL_IP_FROM3: ${FRONTEND_IP_3}
+      DRUPAL_DEFAULT_TRIPLESTORE_NAMESPACE: "islandora"
     healthcheck:
       start_period: ${DRUPAL_HEALTHCHECK_START_PERIOD:-0s}
       retries: ${DRUPAL_HEALTHCHECK_RETRIES:-3}
@@ -228,7 +223,7 @@ services:
       - ./secrets:/secrets:rw
       - ./scripts:/scripts:ro
       - ./docker-compose.yml:/docker-compose.yml:ro
-      - ./drupal:/drupal:rw
+      - .:/drupal:rw
       - /var/run/docker.sock:/var/run/docker.sock:z
 
   mariadb:
@@ -332,4 +327,12 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:z
       - ./conf/traefik:/etc/traefik/dynamic:ro
       - acme-data:/acme:rw
+  cantaloupe:
+    <<: *common
+    image: islandora/cantaloupe:${ISLANDORA_TAG}
+    secrets:
+      - source: CERT_PUBLIC_KEY
+      - source: CERT_AUTHORITY
+    volumes:
+      - cantaloupe-data:/data:rw
 
