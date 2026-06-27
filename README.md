@@ -4,7 +4,7 @@ LibOps Docker Compose template for running [Islandora](https://www.islandora.ca/
 
 ## Requirements
 
-- `sitectl` installed on the host that will run the site.
+- [sitectl](https://sitectl.libops.io/install) installed on the host that will run the site.
 - Docker with the Compose v2 plugin installed on the same host.
 
 ## Quick start
@@ -59,7 +59,7 @@ sitectl set bot-mitigation on
 sitectl converge
 ```
 
-See the [ISLE sitectl plugin docs](https://github.com/libops/sitectl-docs/blob/main/plugins/isle.mdx) for Fedora, Blazegraph, IIIF, derivative microservices, cache, sync, migration, TLS, and bot mitigation details.
+See the [ISLE sitectl plugin docs](https://sitectl.libops.io/plugins/isle) for Fedora, Blazegraph, IIIF, derivative microservices, cache, sync, migration, TLS, and bot mitigation details.
 
 ## Makefile
 
@@ -87,7 +87,7 @@ This template starts from the upstream Islandora site template and applies LibOp
 
 ## License
 
-[GPLv2](http://www.gnu.org/licenses/gpl-2.0.txt)
+The Docker Compose template and LibOps-specific setup in this repository are licensed under the MIT License. The upstream Islandora starter site is licensed separately under the GNU General Public License v2; see `LICENSE.islandora-starter-site`.
 
 ## Attribution
 
