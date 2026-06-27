@@ -45,4 +45,10 @@ docker compose run --rm init
 
 chown -R "$(whoami)" ./certs ./secrets > /dev/null 2>&1 || sudo chown -R "$(whoami)" ./certs ./secrets
 
-make build
+mkdir -p ./certs
+id -u > ./certs/UID
+if [ -d drupal/rootfs ]; then
+  find drupal/rootfs -type d -exec chmod 755 {} \;
+fi
+docker compose pull --ignore-buildable --ignore-pull-failures
+docker compose build --pull

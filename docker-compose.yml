@@ -104,15 +104,15 @@ services:
     environment:
       DEVELOPMENT_ENVIRONMENT: "true"
       DRUPAL_DEFAULT_BROKER_URL: tcp://activemq:61613
-      DRUPAL_DEFAULT_CANTALOUPE_URL: "http://${DOMAIN}/iiif/3"
+      DRUPAL_DEFAULT_CANTALOUPE_URL: "${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}/iiif/3"
       DRUPAL_DEFAULT_CONFIGDIR: /var/www/drupal/config/sync
       DRUPAL_DEFAULT_INSTALL_EXISTING_CONFIG: "true"
       DRUPAL_DEFAULT_NAME: Islandora Digital Collections
       DRUPAL_DEFAULT_PROFILE: minimal
-      DRUPAL_DEFAULT_SITE_URL: ${DOMAIN}
+      DRUPAL_DEFAULT_SITE_URL: ${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}
       DRUPAL_DEFAULT_SOLR_CORE: default
       DRUPAL_ENABLE_HTTPS: "false"
-      DRUSH_OPTIONS_URI: http://${DOMAIN}
+      DRUSH_OPTIONS_URI: ${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}
       DRUPAL_DEFAULT_TRIPLESTORE_NAMESPACE: ""
     healthcheck:
       start_period: ${DRUPAL_HEALTHCHECK_START_PERIOD:-0s}
@@ -266,8 +266,8 @@ services:
     <<: *common
     image: ghcr.io/libops/triplet:v1.1.1@sha256:84dd6c00ed9fd3e60e4e544feda58044d1f47b624fe3a7ee2460e59cc6bf4de2
     environment:
-      TRIPLET_PUBLIC_BASE_URL: http://${DOMAIN}
-      DOMAIN: http://${DOMAIN}
+      TRIPLET_PUBLIC_BASE_URL: ${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}
+      DOMAIN: ${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}
     volumes:
       - drupal-public-files:/public:ro
       - drupal-private-files:/private:ro
