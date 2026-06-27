@@ -56,7 +56,7 @@ secrets:
 services:
   activemq:
     <<: *common
-    image: libops/activemq:5
+    image: libops/activemq:5@sha256:e7bbfa1c9bc84315950a450e763794dcf8dd0cbe6029ccbc748b7d1e4f2a4b7a
     secrets:
       - source: ACTIVEMQ_PASSWORD
       - source: ACTIVEMQ_WEB_ADMIN_PASSWORD
@@ -68,7 +68,7 @@ services:
     depends_on:
       activemq:
         condition: service_healthy
-    image: libops/alpaca:2.4
+    image: libops/alpaca:2.4@sha256:2df6d1889db271c44c3a91ef761835aeb25d58a87d9d72d6e6adaa564739cd26
     secrets:
       - source: ALPACA_JMS_PASSWORD
       - source: CERT_PUBLIC_KEY
@@ -79,7 +79,7 @@ services:
       ALPACA_TRIPLESTORE_INDEXER_ENABLED: "false"
   crayfits:
     <<: *common
-    image: libops/crayfits:main
+    image: libops/crayfits:main@sha256:9939b6288328e42ba8f82e79a99dd85ca4a0bb0d0f52b29466b66eaa4504e9cb
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -154,7 +154,7 @@ services:
 
   houdini:
     <<: *common
-    image: libops/houdini:main
+    image: libops/houdini:main@sha256:8c00d7102054f2d3f31318103680c73c1a27287f45733ba121e9fb2d3dd21a0b
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -163,7 +163,7 @@ services:
 
   hypercube:
     <<: *common
-    image: libops/hypercube:main
+    image: libops/hypercube:main@sha256:64c5839b9513a7161ca62b719ec87599c9dc63a606c0bf3a341654e477d7ad4a
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -172,7 +172,7 @@ services:
 
   init:
     entrypoint: /scripts/init-entrypoint.sh
-    image: libops/base:3.2.2.0
+    image: libops/base:3.2.2.0@sha256:01b44d543f9bc82978220a4f5151dcf2e7b794fe88b33d98cd4d4f836405aa62
     networks:
       default:
     profiles:
@@ -191,7 +191,7 @@ services:
 
   mariadb:
     <<: *common
-    image: libops/mariadb:11.8
+    image: libops/mariadb:11.8@sha256:7519ca636b933388a50199f3637107099cc8968db7cb535669843b1e71f7cb1b
     secrets:
       - source: DB_ROOT_PASSWORD
     volumes:
@@ -199,7 +199,7 @@ services:
 
   mergepdf:
     <<: *common
-    image: libops/mergepdf:main
+    image: libops/mergepdf:main@sha256:8ee2a3cd7d2b02e84af559518b9f7f85e1abe87a4ee337db415619f75d2047a8
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -211,7 +211,7 @@ services:
     depends_on:
       drupal:
         condition: service_healthy
-    image: libops/solr:9
+    image: libops/solr:9@sha256:7c6d97e41675f400b6d9bec461eb1ef371efcf60d7c325f227418769c44364b8
     volumes:
       - solr-data:/data:rw
       - read_only: false
