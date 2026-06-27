@@ -9,8 +9,6 @@
 # If custom.makefile exists include it.
 -include custom.Makefile
 
-DEFAULT_HTTP=80
-DEFAULT_HTTPS=443
 SITECTL ?= sitectl
 SITECTL_CONTEXT ?=
 SITECTL_ARGS := $(if $(SITECTL_CONTEXT),--context $(SITECTL_CONTEXT),)
@@ -45,8 +43,8 @@ build: pull ## Build the drupal container
 init: ## Get the host machine configured to run ISLE
 	./scripts/init.sh
 
-up: ## Start docker compose project with smart port allocation
-	./scripts/up.sh
+up: ## Start docker compose project
+	$(SITECTL) $(SITECTL_ARGS) compose up --remove-orphans -d
 
 up-%:  ## Start a specific service (e.g., make up-drupal)
 	$(SITECTL) $(SITECTL_ARGS) compose up $*

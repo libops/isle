@@ -16,13 +16,6 @@ fi
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/profile.sh"
 
-HTTP_PORT=80
-HTTPS_PORT=443
-
-HOST_INSECURE_PORT=$(find_port $HTTP_PORT "HTTP")
-HOST_SECURE_PORT=$(find_port $HTTPS_PORT "HTTPS")
-export HOST_INSECURE_PORT HOST_SECURE_PORT
-
 # if docker compose fails to come up the first time
 # its likely drupal failed to start nginx before docker compose's health timeout
 # given the drupal container depends on solr
@@ -35,11 +28,11 @@ docker compose up --remove-orphans -d || {
 
 if [ "$URI_SCHEME" = "https" ]; then
     PROTOCOL="https"
-    FINAL_PORT="$HOST_SECURE_PORT"
+    FINAL_PORT="${HOST_SECURE_PORT:-443}"
     DEFAULT_P=443
 else
     PROTOCOL="http"
-    FINAL_PORT="$HOST_INSECURE_PORT"
+    FINAL_PORT="${HOST_INSECURE_PORT:-80}"
     DEFAULT_P=80
 fi
 

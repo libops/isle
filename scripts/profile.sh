@@ -28,72 +28,6 @@ update_env() {
     fi
 }
 
-# Function to check if a port is in use
-# Works on Linux, macOS, and WSL
-is_port_in_use() {
-    local port=$1
-    # Try ss first (available on most Linux/WSL systems)
-    # Use -tln without -H for compatibility, filter with grep
-    if command -v ss >/dev/null 2>&1; then
-        ss -tln 2>/dev/null | grep -q ":${port}\b"
-        return $?
-    fi
-    # Fall back to lsof (available on macOS and some Linux)
-    if command -v lsof >/dev/null 2>&1; then
-        lsof -PiTCP:"$port" -sTCP:LISTEN -t >/dev/null 2>&1
-        return $?
-    fi
-    # Last resort: try netstat
-    if command -v netstat >/dev/null 2>&1; then
-        netstat -tln 2>/dev/null | grep -q ":${port}\b"
-        return $?
-    fi
-    # If no tool available, assume port is free
-    return 1
-}
-
-# Function to find the next available port
-# Depends on the COMPOSE_PROJECT_NAME variable being set in the calling script.
-find_port() {
-    local port=$1
-    if [ "${DEVELOPMENT_ENVIRONMENT:-false}" = "false" ]; then
-      printf "%s\n" "$port"
-      return
-    fi
-
-    while true; do
-        # Check if anything is listening on TCP at this port
-        if ! is_port_in_use "$port"; then
-            break # Port is completely free
-        fi
-
-        # If port is busy, check if it's our own docker project
-        local container_id
-        container_id=$(docker ps -q --filter "publish=$port" || true)
-
-        if [ -n "$container_id" ]; then
-            local our_project
-            our_project=$(docker inspect "$container_id" --format '{{ index .Config.Labels "com.docker.compose.project" }}' 2>/dev/null || echo "")
-            if [ "$our_project" = "$COMPOSE_PROJECT_NAME" ]; then
-                printf "Port %s is already assigned to this project (%s).\n" "$port" "$COMPOSE_PROJECT_NAME" >&2
-                break
-            fi
-        fi
-        echo_e "${RED}Port $port is used by another process.${RESET}" >&2
-        if [ "$port" = "80" ]; then
-          port=8080
-        elif [ "$port" = "443" ]; then
-          port=8443
-        else
-          port=$((port + 1))
-        fi
-
-        echo_e "${YELLOW}Trying $port...${RESET}" >&2
-    done
-    printf "%s\n" "$port"
-}
-
-
 # --- Configuration Warnings ---
 WARNINGS_FOUND=false
 print_warning_header() {
@@ -110,9 +44,9 @@ is_wsl() {
 # --- Environment Check ---
 if [ -f .env ]; then
     # Use || true to prevent set -e from exiting if grep finds nothing
-    DEVELOPMENT_ENVIRONMENT=$(grep '^DEVELOPMENT_ENVIRONMENT=' .env | cut -d'=' -f2 | tr -d '"' || echo "not_set")
-    TLS_PROVIDER=$(grep '^TLS_PROVIDER=' .env | cut -d'=' -f2 | tr -d '"' || echo "not_set")
-    URI_SCHEME=$(grep '^URI_SCHEME=' .env | cut -d'=' -f2 | tr -d '"' || echo "not_set")
+    DEVELOPMENT_ENVIRONMENT=$(grep '^DEVELOPMENT_ENVIRONMENT=' .env | cut -d'=' -f2 | tr -d '"' || echo "true")
+    TLS_PROVIDER=$(grep '^TLS_PROVIDER=' .env | cut -d'=' -f2 | tr -d '"' || echo "self-managed")
+    URI_SCHEME=$(grep '^URI_SCHEME=' .env | cut -d'=' -f2 | tr -d '"' || echo "http")
     ENABLE_ACME="false"
     if [ "${TLS_PROVIDER}" = "letsencrypt" ]; then
         ENABLE_ACME="true"
@@ -123,13 +57,14 @@ if [ -f .env ]; then
     fi
 
     ACME_EMAIL=$(grep '^ACME_EMAIL=' .env | cut -d'=' -f2 | tr -d '"' || echo "postmaster@example.com")
+    ACME_URL=$(grep '^ACME_URL=' .env | cut -d'=' -f2 | tr -d '"' || echo "https://acme-v02.api.letsencrypt.org/directory")
     DOMAIN=$(grep '^DOMAIN=' .env | cut -d'=' -f2 | tr -d '"' || echo "islandora.io")
     ISLANDORA_TAG=$(grep '^ISLANDORA_TAG=' .env | cut -d'=' -f2 | tr -d '"' || echo "main")
     TAG=$(grep '^TAG=' .env | cut -d'=' -f2 | tr -d '"' || echo "local")
     REPOSITORY=$(grep '^REPOSITORY=' .env | cut -d'=' -f2 | tr -d '"' || echo "islandora.io")
     COMPOSE_PROJECT_NAME=$(grep '^COMPOSE_PROJECT_NAME=' .env | cut -d'=' -f2 | tr -d '"' || echo "isle-site-template")
     # Export variables for use by sourcing scripts
-    export DEVELOPMENT_ENVIRONMENT ENABLE_HTTPS URI_SCHEME ENABLE_ACME ACME_EMAIL DOMAIN ISLANDORA_TAG COMPOSE_PROJECT_NAME TAG REPOSITORY
+    export DEVELOPMENT_ENVIRONMENT ENABLE_HTTPS URI_SCHEME ENABLE_ACME ACME_EMAIL ACME_URL DOMAIN ISLANDORA_TAG COMPOSE_PROJECT_NAME TAG REPOSITORY
 else
   echo_e "  ${RED}.env file not found. Cannot determine configuration.${RESET}"
   echo "You should cp sample.env to .env"
@@ -208,13 +143,13 @@ set_https() {
 set_letsencrypt_config() {
   local enable=$1
 
-  sed -i.bak 's/^TLS_PROVIDER=.*/TLS_PROVIDER="self-managed"/' .env && rm -f .env.bak
+  update_env TLS_PROVIDER '"self-managed"'
   sed -i.bak '/--certificatesresolvers.letsencrypt.acme/d' docker-compose.yml && rm -f docker-compose.yml.bak
   sed -i.bak '/--entrypoints.https.http.tls.certResolver/d' docker-compose.yml && rm -f docker-compose.yml.bak
 
   if [ "$enable" = "true" ]; then
-    sed -i.bak 's/^TLS_PROVIDER=.*/TLS_PROVIDER="letsencrypt"/' .env && rm -f .env.bak
-    sed -i.bak 's/^URI_SCHEME=.*/URI_SCHEME="https"/' .env && rm -f .env.bak
+    update_env TLS_PROVIDER '"letsencrypt"'
+    update_env URI_SCHEME '"https"'
 
     # shellcheck disable=SC2016
     sed -i.bak '/command: >-/a\
