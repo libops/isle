@@ -172,7 +172,7 @@ services:
 
   init:
     entrypoint: /scripts/init-entrypoint.sh
-    image: libops/base:main
+    image: libops/base:3.2.2.0
     networks:
       default:
     profiles:
