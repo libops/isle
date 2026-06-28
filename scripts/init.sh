@@ -18,10 +18,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/profile.sh"
 
 if $extend_healthcheck; then
   # we've detected an initial install
-  # so extend the default start period for drupal's healthcheck to 1m
+  # so extend the default start period for drupal's healthcheck
   # so it has time to come online before docker compose marks it unhealthy
-  update_env DRUPAL_HEALTHCHECK_RETRIES 10
-  update_env DRUPAL_HEALTHCHECK_START_PERIOD 1m
+  update_env DRUPAL_HEALTHCHECK_RETRIES 20
+  update_env DRUPAL_HEALTHCHECK_START_PERIOD 5m
 fi
 
 if is_dev_mode && is_docker_rootless; then
@@ -43,7 +43,7 @@ fi
 
 docker compose run --rm init
 
-chown -R "$(whoami)" ./certs ./secrets > /dev/null 2>&1 || sudo chown -R "$(whoami)" ./certs ./secrets
+chown -R "$(whoami)" ./certs ./secrets > /dev/null 2>&1 || sudo chown -R "$(whoami)" ./certs ./secrets > /dev/null 2>&1 || true
 
 mkdir -p ./certs
 id -u > ./certs/UID
@@ -51,4 +51,4 @@ if [ -d drupal/rootfs ]; then
   find drupal/rootfs -type d -exec chmod 755 {} \;
 fi
 docker compose pull --ignore-buildable --ignore-pull-failures
-docker compose build --pull
+docker compose build

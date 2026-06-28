@@ -17,8 +17,9 @@ function configure {
     if [ -n "${DRUPAL_DEFAULT_FCREPO_URL:-}" ]; then
       drush --root=/var/www/drupal --uri="${DRUSH_OPTIONS_URI}" user:role:add fedoraadmin admin
     fi
-    drush --root=/var/www/drupal --uri="${DRUSH_OPTIONS_URI}" pm:uninstall pgsql sqlite
-    drush --root=/var/www/drupal --uri="${DRUSH_OPTIONS_URI}" migrate:import --userid=1 --tag=islandora
+    drush --root=/var/www/drupal --uri="${DRUSH_OPTIONS_URI}" -y pm:uninstall pgsql sqlite || \
+      echo "Could not uninstall unused database drivers; continuing." >&2
+    drush --root=/var/www/drupal --uri="${DRUSH_OPTIONS_URI}" migrate:import --tag=islandora
     drush --root=/var/www/drupal --uri="${DRUSH_OPTIONS_URI}" cron || true
     drush --root=/var/www/drupal --uri="${DRUSH_OPTIONS_URI}" search-api:index || true
     drush --root=/var/www/drupal --uri="${DRUSH_OPTIONS_URI}" cache:rebuild

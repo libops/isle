@@ -55,8 +55,8 @@ echo "---------------------------------------------------"
 # if we extended the healthcheck during init
 # set the values back
 if ${extend_healthcheck:-false}; then
-  update_env DRUPAL_HEALTHCHECK_RETRIES 3
-  update_env DRUPAL_HEALTHCHECK_START_PERIOD 0s
+  update_env DRUPAL_HEALTHCHECK_RETRIES 20
+  update_env DRUPAL_HEALTHCHECK_START_PERIOD 5m
 fi
 
 # don't open the URL if we're in GHA

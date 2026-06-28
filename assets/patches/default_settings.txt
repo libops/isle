@@ -53,17 +53,19 @@ $config['key.key.islandora_rsa_key']['key_provider_settings']['file_location'] =
 
 // Some settings are derived from environment variables.
 $settings['hash_salt'] = file_get_contents($path . 'DRUPAL_DEFAULT_SALT');
+$trusted_host = trim(file_get_contents($path . 'DRUPAL_DEFAULT_SITE_URL'));
+$trusted_host = parse_url($trusted_host, PHP_URL_HOST) ?: trim(preg_replace('#^https?://#', '', $trusted_host), '/');
 $settings['trusted_host_patterns'] = [
-  0 => file_get_contents($path . 'DRUPAL_DEFAULT_SITE_URL'),
+  0 => '^' . preg_quote($trusted_host, '/') . '$',
 ];
 
 // Database settings are also derived from environment variables.
 $databases['default']['default'] = [
-  'database' => file_get_contents($path . 'DRUPAL_DEFAULT_DB_NAME'),
-  'username' => file_get_contents($path . 'DRUPAL_DEFAULT_DB_USER'),
-  'password' => file_get_contents($path . 'DRUPAL_DEFAULT_DB_PASSWORD'),
-  'host' => file_get_contents($path . 'DB_MYSQL_HOST'),
-  'port' => file_get_contents($path . 'DB_MYSQL_PORT'),
+  'database' => file_get_contents($path . 'DB_NAME'),
+  'username' => file_get_contents($path . 'DB_USER'),
+  'password' => file_get_contents($path . 'DB_PASSWORD'),
+  'host' => file_get_contents($path . 'DB_HOST'),
+  'port' => file_get_contents($path . 'DB_PORT'),
   'prefix' => '',
   'driver' => 'mysql',
   'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
