@@ -111,21 +111,7 @@ is_http_tls_uri_mismatch() {
 }
 
 has_no_docker_override() {
-    status_dev || { [ ! -f docker-compose.override.yml ] && [ ! -L docker-compose.override.yml ]; }
-}
-
-is_using_non_standard_ports() {
-    status_dev || [ "${HTTP_PORT:-80}" != "80" ] || [ "${HTTPS_PORT:-443}" != "443" ]
-}
-
-# Detect the host port that maps to 80
-traefik_port_80() {
-    docker compose port traefik 80 | cut -d: -f2
-}
-
-# Detect the host port that maps to 443
-traefik_port_443() {
-    docker compose port traefik 443 | cut -d: -f2
+    status_dev || { [ ! -f docker-compose.override.yml ] && [ ! -L docker-compose.override.yml ] && [ ! -f docker-compose.override.yaml ] && [ ! -L docker-compose.override.yaml ]; }
 }
 
 # Set HTTPS with sed

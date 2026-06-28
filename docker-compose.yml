@@ -90,17 +90,9 @@ services:
     <<: *common
     build:
       args:
+        REPOSITORY: libops
         TAG: 1.30.3-php84
       context: .
-      x-bake:
-        cache-from:
-          - type=registry,ref=islandora.io/isle-site-template:local
-          - type=registry,ref=islandora.io/isle-site-template:latest
-        cache-to:
-          - type=inline
-        platforms:
-          - linux/amd64
-          - linux/arm64
     environment:
       DEVELOPMENT_ENVIRONMENT: "true"
       DRUPAL_DEFAULT_BROKER_URL: tcp://activemq:61613
@@ -241,7 +233,7 @@ services:
     environment:
       DEVELOPMENT_ENVIRONMENT: "true"
       DOMAIN: ${DOMAIN}
-      URI_SCHEME: http
+      URI_SCHEME: "${URI_SCHEME:-http}"
     healthcheck:
       start_period: 10s
       test: traefik healthcheck --ping
@@ -255,7 +247,7 @@ services:
           - ${DOMAIN}
           - solr.${DOMAIN}
     ports:
-      - ${HOST_INSECURE_PORT:-80}:80
+      - "80:80"
     security_opt:
       - label=type:container_runtime_t
     volumes:
