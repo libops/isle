@@ -198,12 +198,6 @@ services:
       - source: DB_ROOT_PASSWORD
     volumes:
       - mariadb-data:/var/lib/mysql:rw
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot --password=\"$$(cat /run/secrets/DB_ROOT_PASSWORD)\" --silent"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
 
   mergepdf:
     <<: *common

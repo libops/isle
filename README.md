@@ -101,7 +101,6 @@ The Makefile is intentionally small. It only keeps ISLE-specific targets that ar
 ```bash
 make demo-objects
 make sync-solr-conf
-make overwrite-starter-site
 make create-starter-site-pr
 make clean
 ```

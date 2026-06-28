@@ -20,7 +20,6 @@ COPY --link config/ /var/www/drupal/config/
 COPY --link recipes/ /var/www/drupal/recipes/
 COPY --link web/modules/custom/ /var/www/drupal/web/modules/custom/
 COPY --link web/themes/custom/ /var/www/drupal/web/themes/custom/
-COPY --link drupal/rootfs/etc/ /etc/
 COPY --link drupal/rootfs/opt/ /opt/
 
 RUN chown -R nginx:nginx /var/www/drupal && \
