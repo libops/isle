@@ -27,7 +27,7 @@ sitectl create isle/default \
   --default-context
 ```
 
-The site is served through Traefik at `http://islandora.io` unless you change `DOMAIN`.
+The site is served through Traefik at `http://localhost` by default.
 
 ## Local image build
 
@@ -64,24 +64,12 @@ sitectl set dev-mode enabled
 sitectl converge
 ```
 
-Switch TLS modes with the [Traefik service commands](https://sitectl.libops.io/plugins/traefik):
+Publish a domain, switch HTTP/TLS mode, configure Let's Encrypt, trust upstream proxies, or tune upload limits with the `ingress` component:
 
 ```bash
-sitectl traefik tls mkcert --domain islandora.localhost
-sitectl traefik tls letsencrypt --email ops@example.org
-```
-
-Trust an upstream load balancer or reverse proxy with [`sitectl set`](https://sitectl.libops.io/commands/set), then apply it with [`sitectl converge`](https://sitectl.libops.io/commands/converge):
-
-```bash
-sitectl set reverse-proxy enabled --trusted-ip 203.0.113.10/32
-sitectl converge
-```
-
-Raise upload limits with [`sitectl set`](https://sitectl.libops.io/commands/set), then apply them with [`sitectl converge`](https://sitectl.libops.io/commands/converge):
-
-```bash
-sitectl set upload-limits enabled --max-upload-size 2G --upload-timeout 10m
+sitectl set ingress enabled --mode https-default --domain islandora.localhost
+sitectl set ingress enabled --mode https-letsencrypt --domain islandora.example.org --acme-email ops@example.org
+sitectl set ingress enabled --trusted-ip 203.0.113.10/32 --max-upload-size 2G --upload-timeout 10m
 sitectl converge
 ```
 
@@ -92,7 +80,7 @@ sitectl set bot-mitigation on
 sitectl converge
 ```
 
-See the [ISLE sitectl plugin docs](https://sitectl.libops.io/plugins/isle) for Fedora, Blazegraph, IIIF, derivative microservices, cache, sync, migration, TLS, and bot mitigation details.
+See the [ISLE sitectl plugin docs](https://sitectl.libops.io/plugins/isle) for Fedora, Blazegraph, IIIF, derivative microservices, cache, sync, migration, ingress, and bot mitigation details.
 
 ## Makefile
 
@@ -105,7 +93,7 @@ make create-starter-site-pr
 make clean
 ```
 
-Use `sitectl compose ...`, `sitectl traefik ...`, and `sitectl set ...` directly for normal stack operations.
+Use `sitectl compose ...` and `sitectl set ...` directly for normal stack operations.
 
 ## Template notes
 

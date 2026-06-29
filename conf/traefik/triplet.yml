@@ -6,6 +6,5 @@ http:
           - url: http://triplet:8080
   routers:
     triplet:
-      rule: Host(`{{ env "DOMAIN" }}`) && PathPrefix(`/iiif`)
+      rule: Host(`localhost`) && PathPrefix(`/iiif`)
       service: triplet
-      tls: {}

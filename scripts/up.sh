@@ -2,17 +2,6 @@
 
 set -eou pipefail
 
-if [ -f .env ]; then
-  # Export variables so docker-compose and this script can see them
-  # shellcheck disable=SC1091
-  source .env
-else
-  echo "Error: .env file not found." >&2
-  ./scripts/init.sh
-  # shellcheck disable=SC1091
-  source .env
-fi
-
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/profile.sh"
 
@@ -26,7 +15,7 @@ docker compose up --remove-orphans -d || {
     docker compose up --remove-orphans -d
 }
 
-URL="${SITE_URL:-${URI_SCHEME}://${DOMAIN}}"
+URL="$(site_url)"
 
 export MAX_RETRIES=3
 WAIT_FOR_INSTALL=$(./scripts/ping.sh || echo "yes")
@@ -51,13 +40,6 @@ fi
 echo "---------------------------------------------------"
 echo "🚀 Site available at: $URL"
 echo "---------------------------------------------------"
-
-# if we extended the healthcheck during init
-# set the values back
-if ${extend_healthcheck:-false}; then
-  update_env DRUPAL_HEALTHCHECK_RETRIES 20
-  update_env DRUPAL_HEALTHCHECK_START_PERIOD 5m
-fi
 
 # don't open the URL if we're in GHA
 if [ "${GITHUB_ACTIONS:-}" != "" ]; then
