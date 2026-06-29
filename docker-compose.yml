@@ -154,7 +154,7 @@ services:
 
   houdini:
     <<: *common
-    image: libops/houdini:main
+    image: libops/houdini:main@sha256:8c00d7102054f2d3f31318103680c73c1a27287f45733ba121e9fb2d3dd21a0b
     pull_policy: missing
     secrets:
       - source: CERT_PUBLIC_KEY
@@ -164,7 +164,7 @@ services:
 
   hypercube:
     <<: *common
-    image: libops/hypercube:main
+    image: libops/hypercube:main@sha256:64c5839b9513a7161ca62b719ec87599c9dc63a606c0bf3a341654e477d7ad4a
     pull_policy: missing
     secrets:
       - source: CERT_PUBLIC_KEY
