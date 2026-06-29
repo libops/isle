@@ -91,7 +91,7 @@ services:
     build:
       args:
         REPOSITORY: libops
-        TAG: 1.30.3-php84
+        TAG: nginx-1.30.3-php84
       context: .
     environment:
       DEVELOPMENT_ENVIRONMENT: "true"
@@ -144,8 +144,7 @@ services:
 
   homarus:
     <<: *common
-    image: libops/homarus:main
-    pull_policy: missing
+    image: libops/homarus:8.1.2
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -154,8 +153,7 @@ services:
 
   houdini:
     <<: *common
-    image: libops/houdini:main@sha256:8c00d7102054f2d3f31318103680c73c1a27287f45733ba121e9fb2d3dd21a0b
-    pull_policy: missing
+    image: libops/houdini:8.18.2
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -164,8 +162,7 @@ services:
 
   hypercube:
     <<: *common
-    image: libops/hypercube:main@sha256:64c5839b9513a7161ca62b719ec87599c9dc63a606c0bf3a341654e477d7ad4a
-    pull_policy: missing
+    image: libops/hypercube:5.5.2
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
