@@ -26,20 +26,7 @@ docker compose up --remove-orphans -d || {
     docker compose up --remove-orphans -d
 }
 
-if [ "$URI_SCHEME" = "https" ]; then
-    PROTOCOL="https"
-    FINAL_PORT="${HOST_SECURE_PORT:-443}"
-    DEFAULT_P=443
-else
-    PROTOCOL="http"
-    FINAL_PORT="${HOST_INSECURE_PORT:-80}"
-    DEFAULT_P=80
-fi
-
-URL="$PROTOCOL://$DOMAIN"
-if [ "$FINAL_PORT" != "$DEFAULT_P" ]; then
-    URL="$URL:$FINAL_PORT"
-fi
+URL="${SITE_URL:-${URI_SCHEME}://${DOMAIN}}"
 
 export MAX_RETRIES=3
 WAIT_FOR_INSTALL=$(./scripts/ping.sh || echo "yes")
@@ -68,8 +55,8 @@ echo "---------------------------------------------------"
 # if we extended the healthcheck during init
 # set the values back
 if ${extend_healthcheck:-false}; then
-  update_env DRUPAL_HEALTHCHECK_RETRIES 3
-  update_env DRUPAL_HEALTHCHECK_START_PERIOD 0s
+  update_env DRUPAL_HEALTHCHECK_RETRIES 20
+  update_env DRUPAL_HEALTHCHECK_START_PERIOD 5m
 fi
 
 # don't open the URL if we're in GHA

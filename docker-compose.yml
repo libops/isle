@@ -90,19 +90,13 @@ services:
     <<: *common
     build:
       args:
+        REPOSITORY: libops
         TAG: 1.30.3-php84
       context: .
-      x-bake:
-        cache-from:
-          - type=registry,ref=islandora.io/isle-site-template:local
-          - type=registry,ref=islandora.io/isle-site-template:latest
-        cache-to:
-          - type=inline
-        platforms:
-          - linux/amd64
-          - linux/arm64
     environment:
       DEVELOPMENT_ENVIRONMENT: "true"
+      DRUPAL_DEFAULT_BROKER_HOST: activemq
+      DRUPAL_DEFAULT_BROKER_PORT: "61613"
       DRUPAL_DEFAULT_BROKER_URL: tcp://activemq:61613
       DRUPAL_DEFAULT_CANTALOUPE_URL: "${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}/iiif/3"
       DRUPAL_DEFAULT_CONFIGDIR: /var/www/drupal/config/sync
@@ -111,12 +105,17 @@ services:
       DRUPAL_DEFAULT_PROFILE: minimal
       DRUPAL_DEFAULT_SITE_URL: ${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}
       DRUPAL_DEFAULT_SOLR_CORE: default
+      DRUPAL_DEFAULT_SOLR_HOST: solr
+      DRUPAL_DEFAULT_SOLR_PORT: "8983"
       DRUPAL_ENABLE_HTTPS: "false"
       DRUSH_OPTIONS_URI: ${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}
       DRUPAL_DEFAULT_TRIPLESTORE_NAMESPACE: ""
     healthcheck:
-      start_period: ${DRUPAL_HEALTHCHECK_START_PERIOD:-0s}
-      retries: ${DRUPAL_HEALTHCHECK_RETRIES:-3}
+      start_period: ${DRUPAL_HEALTHCHECK_START_PERIOD:-5m}
+      retries: ${DRUPAL_HEALTHCHECK_RETRIES:-20}
+    depends_on:
+      mariadb:
+        condition: service_healthy
     image: islandora.io/isle-site-template:local
     secrets:
       - source: CERT_PUBLIC_KEY
@@ -141,11 +140,12 @@ services:
 
   fits:
     <<: *common
-    image: libops/fits:main
+    image: libops/fits@sha256:f945c3aa9b1011261a038d6a2a1ddc7557d1d0c59e00add9a82a47334e78b76f
 
   homarus:
     <<: *common
     image: libops/homarus:main
+    pull_policy: missing
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -154,7 +154,8 @@ services:
 
   houdini:
     <<: *common
-    image: libops/houdini:main@sha256:8c00d7102054f2d3f31318103680c73c1a27287f45733ba121e9fb2d3dd21a0b
+    image: libops/houdini:main
+    pull_policy: missing
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -163,7 +164,8 @@ services:
 
   hypercube:
     <<: *common
-    image: libops/hypercube:main@sha256:64c5839b9513a7161ca62b719ec87599c9dc63a606c0bf3a341654e477d7ad4a
+    image: libops/hypercube:main
+    pull_policy: missing
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -241,7 +243,7 @@ services:
     environment:
       DEVELOPMENT_ENVIRONMENT: "true"
       DOMAIN: ${DOMAIN}
-      URI_SCHEME: http
+      URI_SCHEME: "${URI_SCHEME:-http}"
     healthcheck:
       start_period: 10s
       test: traefik healthcheck --ping
@@ -255,7 +257,7 @@ services:
           - ${DOMAIN}
           - solr.${DOMAIN}
     ports:
-      - ${HOST_INSECURE_PORT:-80}:80
+      - "80:80"
     security_opt:
       - label=type:container_runtime_t
     volumes:
@@ -266,8 +268,8 @@ services:
     <<: *common
     image: ghcr.io/libops/triplet:v1.1.1@sha256:84dd6c00ed9fd3e60e4e544feda58044d1f47b624fe3a7ee2460e59cc6bf4de2
     environment:
-      TRIPLET_PUBLIC_BASE_URL: ${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}
-      DOMAIN: ${SITE_URL:-${URI_SCHEME:-http}://${DOMAIN}}
+      TRIPLET_PUBLIC_BASE_URL: ${URI_SCHEME:-http}://${DOMAIN}
+      DOMAIN: ${URI_SCHEME:-http}://${DOMAIN}
     volumes:
       - drupal-public-files:/public:ro
       - drupal-private-files:/private:ro

@@ -13,15 +13,7 @@ if [ ! -d "islandora_demo_objects" ]; then
   git clone https://github.com/Islandora-Devops/islandora_demo_objects islandora_demo_objects
 fi
 
-URI_PORT=$(traefik_port_80)
-if [ "${URI_SCHEME}" = "https" ]; then
-  URI_PORT=$(traefik_port_443)
-fi
-
-URL="${URI_SCHEME}://${DOMAIN}"
-if [ "${URI_PORT}" != "80" ] && [ "${URI_PORT}" != "443" ]; then
-  URL="${URL}:${URI_PORT}"
-fi
+URL="${SITE_URL:-${URI_SCHEME}://${DOMAIN}}"
 
 sed -i.bak \
   -e "s#^host.*#host: ${URL}/#g" \
