@@ -37,29 +37,6 @@ is_dev_mode() {
     status_dev || [ "${DEVELOPMENT_ENVIRONMENT:-}" = "true" ]
 }
 
-compose_env_value() {
-    local service="$1"
-    local key="$2"
-
-    docker compose config 2>/dev/null | awk -v service="${service}:" -v key="${key}:" '
-        $1 == service { in_service=1; in_env=0; next }
-        in_service && /^[[:space:]]{2}[[:alnum:]_-]+:/ && $1 != service { in_service=0; in_env=0 }
-        in_service && $1 == "environment:" { in_env=1; next }
-        in_service && in_env && $1 == key {
-            sub("^[[:space:]]*" key "[[:space:]]*", "")
-            gsub(/^"|"$/, "")
-            print
-            exit
-        }
-    '
-}
-
 site_url() {
-    local configured="${SITE_URL:-}"
-
-    if [ -z "$configured" ]; then
-        configured="$(compose_env_value drupal DRUPAL_DEFAULT_SITE_URL || true)"
-    fi
-
-    printf '%s\n' "${configured:-http://localhost}"
+    sitectl stats --path . --format json | jq -er '.ingress.public_url'
 }
