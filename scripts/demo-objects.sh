@@ -13,7 +13,8 @@ if [ ! -d "islandora_demo_objects" ]; then
   git clone https://github.com/Islandora-Devops/islandora_demo_objects islandora_demo_objects
 fi
 
-URL="$(container_site_url)"
+URL="$(site_url)"
+NETWORK="$(container_network_for_url "${URL}")"
 
 sed -i.bak \
   -e "s#^host.*#host: ${URL}/#g" \
@@ -37,7 +38,7 @@ docker run \
   "${tty_flag[@]}" \
   --rm \
   --env ISLANDORA_WORKBENCH_PASSWORD="$(cat secrets/DRUPAL_DEFAULT_ACCOUNT_PASSWORD)" \
-  --network="${COMPOSE_PROJECT_NAME}_default" \
+  --network="${NETWORK}" \
   -v "$(pwd)/islandora_workbench":/workbench:z \
   -v "$(pwd)/islandora_demo_objects":/islandora_demo_objects:z \
   --name my-running-workbench \
