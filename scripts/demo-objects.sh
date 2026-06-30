@@ -13,7 +13,7 @@ if [ ! -d "islandora_demo_objects" ]; then
   git clone https://github.com/Islandora-Devops/islandora_demo_objects islandora_demo_objects
 fi
 
-URL="$(site_url)"
+URL="$(container_site_url)"
 
 sed -i.bak \
   -e "s#^host.*#host: ${URL}/#g" \

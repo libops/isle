@@ -40,3 +40,14 @@ is_dev_mode() {
 site_url() {
     sitectl stats --path . --format json | jq -er '.ingress.public_url'
 }
+
+container_site_url() {
+    local url path
+    url="$(site_url)"
+    if [[ "${url}" =~ ^https?://localhost(:[0-9]+)?(/.*)?$ ]]; then
+        path="${BASH_REMATCH[2]:-/}"
+        printf 'http://drupal%s\n' "${path}"
+        return
+    fi
+    printf '%s\n' "${url}"
+}
