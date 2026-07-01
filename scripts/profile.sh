@@ -41,10 +41,14 @@ site_url() {
     sitectl stats --path . --format json | jq -er '.ingress.public_url'
 }
 
+fcrepo_enabled() {
+    docker compose config --services 2>/dev/null | grep -qx 'fcrepo'
+}
+
 container_url_for_url() {
     local url
     url="$1"
-    if [[ "${url}" =~ ^(https?)://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
+    if fcrepo_enabled && [[ "${url}" =~ ^(https?)://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
         printf '%s://drupal.localhost%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[4]}"
         return
     fi
@@ -52,6 +56,15 @@ container_url_for_url() {
 }
 
 container_network_for_url() {
-    : "${1:?url is required}"
+    local url
+    local traefik_container
+    url="${1:?url is required}"
+    if [[ "${url}" =~ ^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
+        traefik_container="$(docker compose ps -q traefik)"
+        if [ -n "${traefik_container}" ]; then
+            printf 'container:%s\n' "${traefik_container}"
+            return
+        fi
+    fi
     printf '%s_default\n' "${COMPOSE_PROJECT_NAME}"
 }
