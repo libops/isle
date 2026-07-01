@@ -56,7 +56,7 @@ secrets:
 services:
   activemq:
     <<: *common
-    image: libops/activemq:5@sha256:e7bbfa1c9bc84315950a450e763794dcf8dd0cbe6029ccbc748b7d1e4f2a4b7a
+    image: libops/activemq:5@sha256:dbe96ff6b2a3011056f16b3a0d86d85e02c1654371f715236bc4d0fa65ee73b5
     secrets:
       - source: ACTIVEMQ_PASSWORD
       - source: ACTIVEMQ_WEB_ADMIN_PASSWORD
@@ -68,7 +68,7 @@ services:
     depends_on:
       activemq:
         condition: service_healthy
-    image: libops/alpaca:2.4@sha256:2df6d1889db271c44c3a91ef761835aeb25d58a87d9d72d6e6adaa564739cd26
+    image: libops/alpaca:2.4@sha256:f2c677e7eac6cbd691576fe464345783f378f1e6da91542399cd0b290c9c347f
     secrets:
       - source: ALPACA_JMS_PASSWORD
       - source: CERT_PUBLIC_KEY
@@ -79,7 +79,7 @@ services:
       ALPACA_TRIPLESTORE_INDEXER_ENABLED: "false"
   crayfits:
     <<: *common
-    image: libops/crayfits:main@sha256:9939b6288328e42ba8f82e79a99dd85ca4a0bb0d0f52b29466b66eaa4504e9cb
+    image: libops/crayfits:main@sha256:730ccc390a40cd744227c62b684aa0d32766edbc4720aadee5248ed3b341006d
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -140,7 +140,7 @@ services:
 
   fits:
     <<: *common
-    image: libops/fits@sha256:f945c3aa9b1011261a038d6a2a1ddc7557d1d0c59e00add9a82a47334e78b76f
+    image: libops/fits@sha256:6c782155276bf35e51f645ce2ff13be1d7ba47300d60041e7969707b760976e7
 
   homarus:
     <<: *common
@@ -171,7 +171,7 @@ services:
 
   init:
     entrypoint: /scripts/init-entrypoint.sh
-    image: libops/base:3.2.2.0@sha256:01b44d543f9bc82978220a4f5151dcf2e7b794fe88b33d98cd4d4f836405aa62
+    image: libops/base:3.2.2.0@sha256:60c788c0dcf1fed021ee17d2847a45dde2b559ecef19b5fa11c2314356976ba9
     networks:
       default:
     profiles:
@@ -189,7 +189,7 @@ services:
 
   mariadb:
     <<: *common
-    image: libops/mariadb:11.8@sha256:7519ca636b933388a50199f3637107099cc8968db7cb535669843b1e71f7cb1b
+    image: libops/mariadb:11.8@sha256:faab6f2e647fc8fd0a2bb5d9d8632428e91bb19d22b23ce46f56007fe5af84e3
     secrets:
       - source: DB_ROOT_PASSWORD
     volumes:
@@ -197,7 +197,7 @@ services:
 
   mergepdf:
     <<: *common
-    image: libops/mergepdf:main@sha256:8ee2a3cd7d2b02e84af559518b9f7f85e1abe87a4ee337db415619f75d2047a8
+    image: libops/mergepdf:main@sha256:2a174bd377bc3835023ffaa5583fd7975a9907fec0d9ff9ad0c3663f581bee08
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -209,7 +209,7 @@ services:
     depends_on:
       drupal:
         condition: service_healthy
-    image: libops/solr:9@sha256:7c6d97e41675f400b6d9bec461eb1ef371efcf60d7c325f227418769c44364b8
+    image: libops/solr:9@sha256:e2fa2dac06add4d844f0856d5c698c10d302d315f3b05ce4fa91b0e3701fa179
     volumes:
       - solr-data:/data:rw
       - read_only: false
@@ -255,7 +255,7 @@ services:
 
   triplet:
     <<: *common
-    image: ghcr.io/libops/triplet:v1.1.1@sha256:84dd6c00ed9fd3e60e4e544feda58044d1f47b624fe3a7ee2460e59cc6bf4de2
+    image: ghcr.io/libops/triplet:v1.1.2@sha256:da42e55c265af7c02d4351e8ea97aa249c6b354b837a03f8c7c372241b1126df
     environment:
       TRIPLET_PUBLIC_BASE_URL: http://localhost
     volumes:
