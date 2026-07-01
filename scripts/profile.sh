@@ -49,7 +49,7 @@ container_url_for_url() {
     local url
     url="$1"
     if fcrepo_enabled && [[ "${url}" =~ ^(https?)://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
-        printf '%s://drupal.localhost%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[4]}"
+        printf '%s://drupal.internal%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[4]}"
         return
     fi
     printf '%s\n' "${url}"
