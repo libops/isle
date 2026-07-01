@@ -243,6 +243,7 @@ services:
     networks:
       default:
         aliases:
+          - drupal.localhost
           - fcrepo.localhost
     ports:
       - "80:80"

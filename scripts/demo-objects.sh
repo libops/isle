@@ -14,10 +14,11 @@ if [ ! -d "islandora_demo_objects" ]; then
 fi
 
 URL="$(site_url)"
-NETWORK="$(container_network_for_url "${URL}")"
+WORKBENCH_URL="$(container_url_for_url "${URL}")"
+NETWORK="$(container_network_for_url "${WORKBENCH_URL}")"
 
 sed -i.bak \
-  -e "s#^host.*#host: ${URL}/#g" \
+  -e "s#^host.*#host: ${WORKBENCH_URL}/#g" \
   -e "s#^input_csv.*#input_csv: /islandora_demo_objects/create_islandora_objects.csv#g" \
   -e "s#^input_dir.*#input_dir: /islandora_demo_objects/#g" \
   -e '/password:/d' \

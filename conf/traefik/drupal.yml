@@ -8,3 +8,7 @@ http:
     drupal:
       rule: Host(`localhost`)
       service: drupal
+    drupal-localhost:
+      rule: Host(`drupal.localhost`)
+      service: drupal
+      priority: 9000

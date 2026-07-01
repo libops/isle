@@ -41,17 +41,17 @@ site_url() {
     sitectl stats --path . --format json | jq -er '.ingress.public_url'
 }
 
-container_network_for_url() {
-    local url traefik_container
+container_url_for_url() {
+    local url
     url="$1"
-    if [[ "${url}" =~ ^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
-        traefik_container="$(docker compose ps -q traefik)"
-        if [ -z "${traefik_container}" ]; then
-            echo "Unable to find the running Traefik container for ${url}" >&2
-            return 1
-        fi
-        printf 'container:%s\n' "${traefik_container}"
+    if [[ "${url}" =~ ^(https?)://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
+        printf '%s://drupal.localhost%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[4]}"
         return
     fi
+    printf '%s\n' "${url}"
+}
+
+container_network_for_url() {
+    : "${1:?url is required}"
     printf '%s_default\n' "${COMPOSE_PROJECT_NAME}"
 }
