@@ -9,7 +9,8 @@ WORKDIR /var/www/drupal
 COPY --link composer.json composer.lock /var/www/drupal/
 COPY --link assets/ /var/www/drupal/assets/
 
-RUN cp /usr/share/drupal/default_settings.txt /var/www/drupal/assets/default_settings.txt
+RUN cp /usr/share/drupal/default_settings.txt /var/www/drupal/assets/default_settings.txt && \
+    cat /var/www/drupal/assets/libops_settings.txt >> /var/www/drupal/assets/default_settings.txt
 
 RUN --mount=type=cache,id=custom-drupal-composer-${TARGETARCH},sharing=locked,target=/root/.composer/cache \
     composer install -d /var/www/drupal --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader && \

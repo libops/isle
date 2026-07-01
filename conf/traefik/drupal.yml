@@ -1,9 +1,4 @@
 http:
-  middlewares:
-    drupal-internal-host:
-      headers:
-        customRequestHeaders:
-          Host: localhost
   services:
     drupal:
       loadBalancer:
@@ -17,5 +12,3 @@ http:
       rule: Host(`drupal.internal`)
       service: drupal
       priority: 9000
-      middlewares:
-        - drupal-internal-host
