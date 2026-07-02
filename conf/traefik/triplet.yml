@@ -6,5 +6,5 @@ http:
           - url: http://triplet:8080
   routers:
     triplet:
-      rule: Host(`localhost`) && PathPrefix(`/iiif`)
+      rule: PathPrefix(`/iiif`)
       service: triplet
