@@ -6,7 +6,7 @@ http:
           - url: http://drupal:80
   routers:
     drupal:
-      rule: Host(`localhost`)
+      rule: PathPrefix(`/`)
       service: drupal
     drupal-internal:
       rule: Host(`drupal.internal`)
