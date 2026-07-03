@@ -103,13 +103,11 @@ services:
       DRUPAL_DEFAULT_INSTALL_EXISTING_CONFIG: "true"
       DRUPAL_DEFAULT_NAME: Islandora Digital Collections
       DRUPAL_DEFAULT_PROFILE: minimal
-      DRUPAL_DEFAULT_SITE_URL: http://localhost
       DRUPAL_DEFAULT_SOLR_CORE: default
       DRUPAL_DEFAULT_SOLR_HOST: solr
       DRUPAL_DEFAULT_SOLR_PORT: "8983"
-      DRUPAL_TRUSTED_HOST_PATTERNS: "^localhost$"
-      DRUPAL_ENABLE_HTTPS: "false"
-      DRUSH_OPTIONS_URI: http://localhost
+      INGRESS_HOSTNAMES: "localhost,drupal.internal"
+      INGRESS_SCHEME: "http"
       DRUPAL_DEFAULT_TRIPLESTORE_NAMESPACE: ""
     healthcheck:
       start_period: ${DRUPAL_HEALTHCHECK_START_PERIOD:-5m}
@@ -245,7 +243,6 @@ services:
       default:
         aliases:
           - drupal.internal
-          - fcrepo.localhost
     ports:
       - "80:80"
     security_opt:

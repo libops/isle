@@ -11,7 +11,8 @@ http:
           - url: http://fcrepo:8080
   routers:
     fcrepo:
-      rule: Host(`fcrepo.localhost`)
+      rule: PathPrefix(`/fcrepo`)
       middlewares:
         - fcrepo-strip-suffix
       service: fcrepo
+      priority: 100
