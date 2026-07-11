@@ -1,6 +1,5 @@
-ARG REPOSITORY=libops
-ARG TAG=nginx-1.30.3-php84
-FROM ${REPOSITORY}/islandora:${TAG}
+ARG BASE_IMAGE=libops/islandora:nginx-1.30.3-php84
+FROM ${BASE_IMAGE}
 
 ARG TARGETARCH
 

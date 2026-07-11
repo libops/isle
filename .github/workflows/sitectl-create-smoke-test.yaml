@@ -1,0 +1,34 @@
+name: sitectl-create-smoke-test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sitectl-create-smoke-test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  create:
+    name: sitectl create isle ${{ matrix.create_definition }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - create_definition: default
+            create_args: >-
+              --fcrepo off
+              --blazegraph off
+              --isle-file-system-uri private
+              --iiif triplet
+              --iiif-topology disabled
+              --bot-mitigation off
+    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@8f2eb98981e477cb8ac65d24c6fe06f45e31159c # main
+    with:
+      plugin: isle
+      create-definition: ${{ matrix.create_definition }}
+      create-args: ${{ matrix.create_args }}

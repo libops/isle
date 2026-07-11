@@ -31,7 +31,9 @@ The site is served through Traefik at `http://localhost` by default.
 
 ## Local image build
 
-The `drupal` service builds this checkout on top of the LibOps Islandora base image. The Dockerfile copies Composer lockfiles and assets before local recipes, modules, themes, config, and rootfs additions so Docker can reuse dependency layers when only site customizations change. Local builds use the platform selected by the Docker CLI and do not push images.
+The `drupal` service builds this checkout on top of the LibOps Islandora base image. The Dockerfile copies Composer lockfiles and assets before local recipes, modules, themes, config, and rootfs additions so Docker can reuse dependency layers when only site customizations change. During `sitectl create`, initialization prepares secrets, certificates, ownership, and rootfs permissions; the normal create build phase then builds the image once. Local builds use the platform selected by the Docker CLI and do not push images.
+
+Docker Compose derives the project name from the checkout directory, so independent forks do not share containers, networks, or named volumes by default. Set `COMPOSE_PROJECT_NAME` explicitly when a stable name is required. If an existing checkout previously relied on this template's fixed `isle-site-template` project name, set `COMPOSE_PROJECT_NAME=isle-site-template` before starting it to keep using its existing named volumes, or migrate those volumes deliberately.
 
 ## Basic Operations
 
@@ -50,18 +52,17 @@ sitectl healthcheck
 sitectl validate
 ```
 
-Update image tags or pin a full image reference with [`sitectl image`](https://sitectl.libops.io/commands/image):
+Update the application base tag or pin that base by digest with [`sitectl image`](https://sitectl.libops.io/commands/image):
 
 ```bash
-sitectl image set --tag drupal=nginx-1.30.3-php84 --tag solr=9 --tag alpaca=main
-sitectl image set --image drupal=libops/islandora:nginx-1.30.3-php84@sha256:...
+sitectl image set --tag drupal=nginx-1.30.3-php84 --tag solr=9 --tag alpaca=2.4
+sitectl image set --build-arg drupal.BASE_IMAGE=libops/islandora:nginx-1.30.3-php84@sha256:...
 ```
 
-Enable local development bind mounts with [`sitectl set`](https://sitectl.libops.io/commands/set), then apply the component change with [`sitectl converge`](https://sitectl.libops.io/commands/converge):
+Enable local development bind mounts with [`sitectl set`](https://sitectl.libops.io/commands/set):
 
 ```bash
 sitectl set dev-mode enabled
-sitectl converge
 ```
 
 Publish a domain, switch HTTP/TLS mode, configure Let's Encrypt, trust upstream proxies, or tune upload limits with the `ingress` component:
@@ -70,16 +71,16 @@ Publish a domain, switch HTTP/TLS mode, configure Let's Encrypt, trust upstream 
 sitectl set ingress enabled --mode https-custom --domain islandora.localhost
 sitectl set ingress enabled --mode https-letsencrypt --domain islandora.example.org --acme-email ops@example.org
 sitectl set ingress enabled --trusted-ip 203.0.113.10/32 --max-upload-size 2G --upload-timeout 10m
-sitectl converge
 ```
+
+`sitectl set` applies the requested component change immediately. Use `sitectl converge` when you want an interactive review of the complete component state.
 
 The ingress component writes `INGRESS_HOSTNAMES` as comma-separated hostnames and `INGRESS_SCHEME` as `http` or `https` into the app container. Runtime config is rendered from those values during container startup, so generated sites should not carry separate app URL env vars for the same public route.
 
-Enable ISLE bot mitigation with [`sitectl set`](https://sitectl.libops.io/commands/set), then apply it with [`sitectl converge`](https://sitectl.libops.io/commands/converge):
+Enable ISLE bot mitigation with [`sitectl set`](https://sitectl.libops.io/commands/set):
 
 ```bash
 sitectl set bot-mitigation on
-sitectl converge
 ```
 
 See the [ISLE sitectl plugin docs](https://sitectl.libops.io/plugins/isle) for Fedora, Blazegraph, IIIF, derivative microservices, cache, sync, migration, ingress, and bot mitigation details.
@@ -106,6 +107,10 @@ This template starts from the upstream [ISLE Site Template](https://github.com/I
 - Blazegraph removed by default.
 - Cantaloupe replaced with Triplet.
 - LibOps images for the application services.
+
+Only MariaDB and the one-shot `database-init` service receive `DB_ROOT_PASSWORD`. The initializer idempotently creates the Drupal database and scoped user before the app starts; the long-running Drupal service receives only `DRUPAL_DEFAULT_DB_PASSWORD` as `DB_PASSWORD`. Optional components that need their own database follow the same scoped-credential boundary. Initialization also generates the dormant `TOMCAT_ADMIN_PASSWORD` credential so enabling Fedora later never falls back to a baked-in default.
+
+ActiveMQ, Alpaca, and Drupal share the generated `ACTIVEMQ_PASSWORD` through service-specific secret targets. Drupal receives it as `DRUPAL_DEFAULT_BROKER_PASSWORD` together with the non-secret `admin` broker username, so the rendered Islandora settings use authenticated STOMP rather than relying on a broker default.
 
 ## License
 

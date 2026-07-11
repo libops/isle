@@ -2,11 +2,18 @@
 
 set -euf -o pipefail
 
-RESET=$(tput sgr0)
-RED=$(tput setaf 9)
-GREEN=$(tput setaf 2)
-BLUE=$(tput setaf 6)
-YELLOW=$(tput setaf 3)
+RESET=""
+RED=""
+GREEN=""
+BLUE=""
+YELLOW=""
+if command -v tput >/dev/null 2>&1 && [ -n "${TERM:-}" ]; then
+    RESET="$(tput sgr0 2>/dev/null || true)"
+    RED="$(tput setaf 9 2>/dev/null || true)"
+    GREEN="$(tput setaf 2 2>/dev/null || true)"
+    BLUE="$(tput setaf 6 2>/dev/null || true)"
+    YELLOW="$(tput setaf 3 2>/dev/null || true)"
+fi
 readonly RESET RED GREEN BLUE YELLOW
 # Export color codes for use by sourcing scripts
 export RESET RED GREEN BLUE YELLOW
@@ -21,9 +28,8 @@ is_wsl() {
     grep -qi microsoft /proc/version 2>/dev/null || grep -qi wsl /proc/version 2>/dev/null || false
 }
 
-COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-isle-site-template}"
 DEVELOPMENT_ENVIRONMENT="${DEVELOPMENT_ENVIRONMENT:-false}"
-export COMPOSE_PROJECT_NAME DEVELOPMENT_ENVIRONMENT
+export DEVELOPMENT_ENVIRONMENT
 
 status_dev() {
     [ "${STATUS_DEV:-false}" = "true" ]
@@ -57,6 +63,7 @@ container_url_for_url() {
 
 container_network_for_url() {
     local url
+    local compose_project_name
     local traefik_container
     url="${1:?url is required}"
     if [[ "${url}" =~ ^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
@@ -66,5 +73,6 @@ container_network_for_url() {
             return
         fi
     fi
-    printf '%s_default\n' "${COMPOSE_PROJECT_NAME}"
+    compose_project_name="$(docker compose config --format json | jq -er '.name')"
+    printf '%s_default\n' "${compose_project_name}"
 }

@@ -1,6 +1,12 @@
-.env
+.env*
 docker-compose.override.yml
 docker-compose.override.yaml
+certs/*
+!certs/.gitignore
+secrets/*
+!secrets/.gitignore
+backups/
+acme.json
 ./drupal/rootfs/var/www/drupal/vendor
 ./drupal/rootfs/var/www/drupal/web/core
 ./drupal/rootfs/var/www/drupal/web/modules/contrib

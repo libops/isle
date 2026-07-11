@@ -5,37 +5,11 @@ set -eou pipefail
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]}")/profile.sh"
 
-# if docker compose fails to come up the first time
-# its likely drupal failed to start nginx before docker compose's health timeout
-# given the drupal container depends on solr
-# and the solr docker compose service depends on a healthy drupal
-# get solr up and retry the command if it fails the first time
-docker compose up --remove-orphans -d || {
-    docker compose up solr -d
-    docker compose up --remove-orphans -d
-}
+docker compose up --remove-orphans --wait --wait-timeout "${COMPOSE_WAIT_TIMEOUT:-900}"
 
 URL="$(site_url)"
 
-export MAX_RETRIES=3
-WAIT_FOR_INSTALL=$(./scripts/ping.sh || echo "yes")
-if [ "$WAIT_FOR_INSTALL" = "yes" ]; then
-    echo "Site install in progress..."
-    docker compose logs -f --since 20s drupal 2>&1 | { \
-        while read -r line; do \
-            echo "$line"; \
-            if echo "$line" | grep -q "Install Completed"; then \
-                pkill -f "docker compose logs -f" || true; \
-                exit 0; \
-            fi; \
-        done; \
-    } || true;
-fi
-
-# The Drupal install log line can arrive slightly before Traefik can proxy a
-# successful request to the backend, so do one final readiness check before
-# announcing the URL or opening the browser.
-./scripts/ping.sh > /dev/null 2>&1
+MAX_RETRIES="${POST_INSTALL_MAX_RETRIES:-12}" ./scripts/ping.sh > /dev/null 2>&1
 
 echo "---------------------------------------------------"
 echo "🚀 Site available at: $URL"
