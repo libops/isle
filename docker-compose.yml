@@ -160,7 +160,7 @@ services:
 
   fits:
     <<: *common
-    image: libops/fits@sha256:6a2baac37ab9cf72f7af820ba38acd7a3ccad3c9f77a419c864adbb6c78d451c
+    image: libops/fits:1.6.0@sha256:6a2baac37ab9cf72f7af820ba38acd7a3ccad3c9f77a419c864adbb6c78d451c
 
   homarus:
     <<: *common
