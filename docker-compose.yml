@@ -53,7 +53,7 @@ secrets:
 services:
   activemq:
     <<: *common
-    image: libops/activemq:5@sha256:6a80f11437641c254bcc17d93019e8512e80e7e5a11fe10e2b554d181a32a9cd
+    image: libops/activemq:5@sha256:325379229480ce585b27ccb03daa62af6c9b35996610689fe65376c56c4adef6
     secrets:
       - source: ACTIVEMQ_PASSWORD
       - source: ACTIVEMQ_WEB_ADMIN_PASSWORD
@@ -65,7 +65,7 @@ services:
     depends_on:
       activemq:
         condition: service_healthy
-    image: libops/alpaca:2.4@sha256:b33ae0f0259dfd7591b12b6dfb5798b1d6c063973d4cc2063aa974e58cc4f55c
+    image: libops/alpaca:2.4@sha256:1003499410c1fb7beee15099572347e163a305e8925d68a5c4194fde1314610a
     secrets:
       - source: ALPACA_JMS_PASSWORD
       - source: CERT_PUBLIC_KEY
@@ -76,7 +76,7 @@ services:
       ALPACA_TRIPLESTORE_INDEXER_ENABLED: "false"
   crayfits:
     <<: *common
-    image: libops/crayfits:main@sha256:4eb53b318172b869752d980bf626f55ee05bf109dc3f2fade503f3658fedbfc8
+    image: libops/crayfits:main@sha256:a922ff61cdc73ae63b46d2e3b2c1e8ff41b121704aababe64f99255e274bff85
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -136,7 +136,7 @@ services:
       - drupal-solr-config:/opt/solr/server/solr/default:z,rw
 
   database-init:
-    image: libops/base:3.2.2.0@sha256:2382876ad70c936e99f6b838fb16c709cb9d9f91e6aa3be5625355ee1f3fab90
+    image: libops/base:3.2.2.0@sha256:0c6bab5444d4758bb977a42c1e5199cba733c7776e1aa006f8021108a785c547
     restart: "no"
     networks:
       default:
@@ -160,11 +160,11 @@ services:
 
   fits:
     <<: *common
-    image: libops/fits:1.6.0@sha256:6a2baac37ab9cf72f7af820ba38acd7a3ccad3c9f77a419c864adbb6c78d451c
+    image: libops/fits:1.6.0@sha256:9471bd835e797f6c41052062c1095129748a698710df9576b8f867248e0e3b45
 
   homarus:
     <<: *common
-    image: libops/homarus:8.1.2@sha256:b39611beee06ac9f4eee561b3911e2463fad61edb075ec29e86e954e389db39c
+    image: libops/homarus:8.1.2@sha256:e5352d9f1560bb3496fb7ff4d270085d8b05bcf61c4a2496e2e743b8eaab6fd9
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -173,7 +173,7 @@ services:
 
   houdini:
     <<: *common
-    image: libops/houdini:8.18.2@sha256:b893fa41b6393e5af291111a9ed4a9d10c88c0c4d87c816981163315e27851a1
+    image: libops/houdini:8.18.2@sha256:25a40f144ba115cf08ef8dd1899fd40ee8dcd4d67bf65fd5415114dfd0ab8925
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -182,7 +182,7 @@ services:
 
   hypercube:
     <<: *common
-    image: libops/hypercube:5.5.2@sha256:f79cc03dc1af1a62020a6fadead6b3fc42bf89c5181052b3f2e1c45da8e01c95
+    image: libops/hypercube:5.5.2@sha256:68011206c264e5e8bcb9e38fea74e6aef0319e2031f1ba71ff462144ca9bc023
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -191,7 +191,7 @@ services:
 
   init:
     entrypoint: /scripts/init-entrypoint.sh
-    image: libops/base:3.2.2.0@sha256:2382876ad70c936e99f6b838fb16c709cb9d9f91e6aa3be5625355ee1f3fab90
+    image: libops/base:3.2.2.0@sha256:0c6bab5444d4758bb977a42c1e5199cba733c7776e1aa006f8021108a785c547
     networks:
       default:
     profiles:
@@ -205,7 +205,7 @@ services:
 
   mariadb:
     <<: *common
-    image: libops/mariadb:11.8@sha256:edc726a734409b93a54535e9251132d778575c0f7e77ae4ef552c9fe936cc560
+    image: libops/mariadb:11.8@sha256:1b0f53f277cedf95e1fa6df25580de01dd2d0722b09f39fe0d93cfb6263e26f3
     secrets:
       - source: DB_ROOT_PASSWORD
     volumes:
@@ -213,7 +213,7 @@ services:
 
   mergepdf:
     <<: *common
-    image: libops/mergepdf:main@sha256:bd9d94554aedc84da8b3487947a443e916f40a69e44ba2e2e189e7e26bb29cc0
+    image: libops/mergepdf:main@sha256:efdd0974fa180616f1673796598c9cfe0b7c7bed119779d369187847362e2fe6
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -225,7 +225,7 @@ services:
     depends_on:
       drupal:
         condition: service_healthy
-    image: libops/solr:9@sha256:87ceec3ac1f0555455f7e2164ab7c87e8027c3a1e06144849d4d5daa45313bd9
+    image: libops/solr:9@sha256:267504e413f0d2226a734ad3031487dfd3f9ca75c0e3284c7d924eae6388e6b5
     volumes:
       - solr-data:/data:rw
       - read_only: false
