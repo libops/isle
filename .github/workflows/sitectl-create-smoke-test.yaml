@@ -27,8 +27,11 @@ jobs:
               --iiif triplet
               --iiif-topology disabled
               --bot-mitigation off
-    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@578137212ead4ab4059e95df17fa30e9b7ac4aed # main
+    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@55489923a34bd3714d2a1b9c5f8a6c678ea1cbfe # main
     with:
       plugin: isle
       create-definition: ${{ matrix.create_definition }}
       create-args: ${{ matrix.create_args }}
+      packages: sitectl sitectl-drupal sitectl-isle
+      package-versions: sitectl=0.40.0 sitectl-drupal=0.11.0 sitectl-isle=0.18.1
+      allow-unversioned-packages: false
