@@ -213,7 +213,7 @@ services:
 
   mergepdf:
     <<: *common
-    image: libops/mergepdf:main@sha256:efdd0974fa180616f1673796598c9cfe0b7c7bed119779d369187847362e2fe6
+    image: islandora/mergepdf:${ISLANDORA_TAG}
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY

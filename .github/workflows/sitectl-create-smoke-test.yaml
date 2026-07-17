@@ -33,5 +33,5 @@ jobs:
       create-definition: ${{ matrix.create_definition }}
       create-args: ${{ matrix.create_args }}
       packages: sitectl sitectl-drupal sitectl-isle
-      package-versions: sitectl=0.40.0 sitectl-drupal=0.11.0 sitectl-isle=0.18.1
+      package-versions: sitectl=1.0.0 sitectl-drupal=1.0.0 sitectl-isle=1.0.0
       allow-unversioned-packages: false
