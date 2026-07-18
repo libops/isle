@@ -1,7 +1,6 @@
 name: sitectl-create-smoke-test
 
 on:
-  push:
   pull_request:
   workflow_dispatch:
 
