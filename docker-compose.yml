@@ -108,8 +108,6 @@ services:
       start_period: ${DRUPAL_HEALTHCHECK_START_PERIOD:-5m}
       retries: ${DRUPAL_HEALTHCHECK_RETRIES:-20}
     depends_on:
-      database-init:
-        condition: service_completed_successfully
       mariadb:
         condition: service_healthy
     secrets:
@@ -134,29 +132,6 @@ services:
         target: /var/www/drupal/private
         type: volume
       - drupal-solr-config:/opt/solr/server/solr/default:z,rw
-
-  database-init:
-    image: libops/base:3.2.2.0@sha256:0c6bab5444d4758bb977a42c1e5199cba733c7776e1aa006f8021108a785c547
-    restart: "no"
-    networks:
-      default:
-    environment:
-      DB_HOST: mariadb
-      DB_PORT: "3306"
-      DB_NAME: drupal_default
-      DB_USER: drupal_default
-      DB_CHARACTER_SET: utf8mb4
-      DB_COLLATION: utf8mb4_unicode_ci
-    secrets:
-      - source: DB_ROOT_PASSWORD
-      - source: DRUPAL_DEFAULT_DB_PASSWORD
-        target: DB_PASSWORD
-    volumes:
-      - ./scripts/init-database.sh:/usr/local/bin/init-database.sh:ro,z
-    entrypoint: /usr/local/bin/init-database.sh
-    depends_on:
-      mariadb:
-        condition: service_healthy
 
   fits:
     <<: *common
