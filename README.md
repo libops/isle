@@ -75,22 +75,6 @@ sitectl set ingress enabled --trusted-ip 203.0.113.10/32 --max-upload-size 2G --
 
 `sitectl set` applies the requested component change immediately. Use `sitectl converge` when you want an interactive review of the complete component state.
 
-MergePDF and hOCR Search are feature bundles: each component owns its Compose,
-Drupal configuration, and Composer requirements as one reviewable change. Both
-are enabled and reconciled during `sitectl create`. Existing installations can
-adopt or repair them explicitly:
-
-```bash
-sitectl set mergepdf enabled --islandora-tag 6.3.19
-sitectl set hocr-search enabled
-```
-
-The MergePDF bundle writes `ISLANDORA_TAG` to the selected Compose environment
-file and requires `islandora/alpaca:6.3.19` or newer when the upstream Alpaca
-image is selected. The LibOps Alpaca image remains a supported compatible
-implementation. hOCR Search requires `islandora/solr:4.2.1` or a compatible
-LibOps Solr image.
-
 The ingress component writes `INGRESS_HOSTNAMES` as comma-separated hostnames and `INGRESS_SCHEME` as `http` or `https` into the app container. Runtime config is rendered from those values during container startup, so generated sites should not carry separate app URL env vars for the same public route.
 
 Enable ISLE bot mitigation with [`sitectl set`](https://sitectl.libops.io/commands/set):

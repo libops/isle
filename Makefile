@@ -18,7 +18,7 @@ demo-objects: ## Add demo objects from https://github.com/Islandora-Devops/islan
 	./scripts/demo-objects.sh
 
 sync-solr-conf: ## Refresh tracked Solr default core config from the running drupal container
-	./scripts/sync-solr-conf.sh
+	sitectl drupal solr-config refresh
 
 create-starter-site-pr: ## Create a PR for islandora-starter-site updates
 	./scripts/create-pr.sh
