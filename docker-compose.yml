@@ -53,7 +53,7 @@ secrets:
 services:
   activemq:
     <<: *common
-    image: libops/activemq:5@sha256:325379229480ce585b27ccb03daa62af6c9b35996610689fe65376c56c4adef6
+    image: libops/activemq:5@sha256:9907574809fc3bb2bb8dfa0f59e750b166e01586ae53968fbfcdeacd003d0146
     secrets:
       - source: ACTIVEMQ_PASSWORD
       - source: ACTIVEMQ_WEB_ADMIN_PASSWORD
@@ -65,7 +65,7 @@ services:
     depends_on:
       activemq:
         condition: service_healthy
-    image: libops/alpaca:2.4@sha256:1003499410c1fb7beee15099572347e163a305e8925d68a5c4194fde1314610a
+    image: libops/alpaca:2.4@sha256:8af69239f2e957abc70fd103bb05832ac0f80bc52b83b64258472c538d0b87e6
     secrets:
       - source: ALPACA_JMS_PASSWORD
       - source: CERT_PUBLIC_KEY
@@ -76,7 +76,7 @@ services:
       ALPACA_TRIPLESTORE_INDEXER_ENABLED: "false"
   crayfits:
     <<: *common
-    image: libops/crayfits:main@sha256:a922ff61cdc73ae63b46d2e3b2c1e8ff41b121704aababe64f99255e274bff85
+    image: libops/crayfits:main@sha256:a6178116cfe8a535d2321ef043159895a46aef19714449579d3347fa5e139b69
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -135,11 +135,11 @@ services:
 
   fits:
     <<: *common
-    image: libops/fits:1.6.0@sha256:9471bd835e797f6c41052062c1095129748a698710df9576b8f867248e0e3b45
+    image: libops/fits:1.6.0@sha256:f1debfe52827a18ef3d02224cff683477dfb9073307bf4000739c7627a08c6d5
 
   homarus:
     <<: *common
-    image: libops/homarus:8.1.2@sha256:e5352d9f1560bb3496fb7ff4d270085d8b05bcf61c4a2496e2e743b8eaab6fd9
+    image: libops/homarus:8.1.2@sha256:f3a826a80a7f44f0a4245ac9647c05ab509f19c9b991d6f71a263adadbeae7dd
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -148,7 +148,7 @@ services:
 
   houdini:
     <<: *common
-    image: libops/houdini:8.18.2@sha256:25a40f144ba115cf08ef8dd1899fd40ee8dcd4d67bf65fd5415114dfd0ab8925
+    image: libops/houdini:8.18.2@sha256:a78854fbaedfe8793c7e90ee170c301bc15139022e571944c396b146b57ec821
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -157,7 +157,7 @@ services:
 
   hypercube:
     <<: *common
-    image: libops/hypercube:5.5.2@sha256:68011206c264e5e8bcb9e38fea74e6aef0319e2031f1ba71ff462144ca9bc023
+    image: libops/hypercube:5.5.2@sha256:ac162e3b483c18678e764b994fe91a4558bbb7011223145d8d9d51b5a1165356
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -166,7 +166,7 @@ services:
 
   init:
     entrypoint: /scripts/init-entrypoint.sh
-    image: libops/base:3.2.2.0@sha256:0c6bab5444d4758bb977a42c1e5199cba733c7776e1aa006f8021108a785c547
+    image: libops/base:3.2.2.0@sha256:d4da77a62c6dead3d52c0e0cc4f38647379d7edd8b2be7b17a2cce06d469b545
     networks:
       default:
     profiles:
@@ -180,7 +180,7 @@ services:
 
   mariadb:
     <<: *common
-    image: libops/mariadb:11.8@sha256:1b0f53f277cedf95e1fa6df25580de01dd2d0722b09f39fe0d93cfb6263e26f3
+    image: libops/mariadb:11.8@sha256:7e0eb90c7cba204b62e8bed72fba00193cbc2e50072fc6e40a6fab8de4b0b857
     secrets:
       - source: DB_ROOT_PASSWORD
     volumes:
@@ -188,7 +188,7 @@ services:
 
   mergepdf:
     <<: *common
-    image: islandora/mergepdf:6.3.19
+    image: islandora/mergepdf:6.4.3@sha256:fcd7c2e81a67df773d5acbcbf6d307e1552f46722591ddeaf8f949b42ae2c97d
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY
@@ -200,7 +200,7 @@ services:
     depends_on:
       drupal:
         condition: service_healthy
-    image: libops/solr:9@sha256:267504e413f0d2226a734ad3031487dfd3f9ca75c0e3284c7d924eae6388e6b5
+    image: libops/solr:9@sha256:089ab7c43efcba365b29de1f55ddc58e740659c120c9317e30c5881100001761
     volumes:
       - solr-data:/data:rw
       - read_only: false
@@ -228,7 +228,7 @@ services:
     healthcheck:
       start_period: 10s
       test: traefik healthcheck --ping
-    image: traefik:v3.7.5@sha256:e4d98158c01ad752fc1071d4e9573788747230d902cdde00a772516e692d07c9
+    image: traefik:v3.7.9@sha256:652929a140a32d7cafafb13c6cdfab5376cfeff800f51397b87b524501ed02a8
     networks:
       default:
         aliases:
@@ -240,7 +240,7 @@ services:
 
   triplet:
     <<: *common
-    image: ghcr.io/libops/triplet:v1.1.1@sha256:84dd6c00ed9fd3e60e4e544feda58044d1f47b624fe3a7ee2460e59cc6bf4de2
+    image: ghcr.io/libops/triplet:v1.2.0@sha256:6f7ce5374a4517456ae0b8ba410f0abd2e6a717675e8f4e3e18ddf6ab2227ace
     environment:
       TRIPLET_PUBLIC_BASE_URL: http://localhost
     volumes:
