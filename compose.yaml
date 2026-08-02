@@ -88,6 +88,10 @@ services:
     build:
       context: .
     environment:
+      DB_HOST: mariadb
+      DB_PORT: "3306"
+      DB_NAME: drupal_default
+      DB_USER: drupal_default
       DEVELOPMENT_ENVIRONMENT: "false"
       DRUPAL_DEFAULT_BROKER_HOST: activemq
       DRUPAL_DEFAULT_BROKER_PORT: "61613"
