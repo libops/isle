@@ -26,7 +26,7 @@ jobs:
               --iiif triplet
               --iiif-topology disabled
               --bot-mitigation off
-    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@55489923a34bd3714d2a1b9c5f8a6c678ea1cbfe # main
+    uses: libops/.github/.github/workflows/sitectl-create-smoke-test.yaml@92a70c027cfe2553a8bc4adaba67a3e620ff6958 # main
     with:
       plugin: isle
       create-definition: ${{ matrix.create_definition }}
