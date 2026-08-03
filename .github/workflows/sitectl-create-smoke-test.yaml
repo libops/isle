@@ -31,9 +31,6 @@ jobs:
       plugin: isle
       create-definition: ${{ matrix.create_definition }}
       create-args: ${{ matrix.create_args }}
-      packages: sitectl sitectl-drupal
-      package-versions: sitectl=1.0.0 sitectl-drupal=1.0.0
+      packages: sitectl sitectl-isle sitectl-drupal
+      package-versions: sitectl=1.6.3 sitectl-isle=1.3.0 sitectl-drupal=1.2.0
       allow-unversioned-packages: false
-      local-plugin-repository: libops/sitectl-isle
-      local-plugin-ref: canonical-compose-filename
-      local-plugin-path: sitectl-isle-source
