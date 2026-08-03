@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=libops/islandora:nginx-1.30.3-php84@sha256:e9235dc3789d6ba8885849c80888b755d9e60c316e5de8d88bcd5e9d214ecd42
+ARG BASE_IMAGE=libops/islandora:nginx-1.30.3-php84@sha256:914e3267c05abc00caded5108d8ebab4c129543926e1d9e240ee0465dad1dd41
 FROM ${BASE_IMAGE}
 
 ARG TARGETARCH
