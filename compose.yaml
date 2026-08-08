@@ -137,14 +137,8 @@ services:
         source: drupal-private-files
         target: /var/www/drupal/private
         type: volume
-      - read_only: true
-        source: ./scripts/drupal-media-storage-state.php
-        target: /var/www/drupal/drupal-media-storage-state.php
-        type: bind
-      - read_only: true
-        source: ./scripts/drupal-wait-installed.sh
-        target: /usr/local/lib/sitectl/drupal-wait-installed.sh
-        type: bind
+      - ./scripts/drupal-media-storage-state.php:/var/www/drupal/drupal-media-storage-state.php:ro,z
+      - ./scripts/drupal-wait-installed.sh:/usr/local/lib/sitectl/drupal-wait-installed.sh:ro,z
       - drupal-solr-config:/opt/solr/server/solr/default:z,rw
 
   fits:
@@ -199,6 +193,7 @@ services:
       - ./certs:/work/certs:rw,z
       - ./secrets:/work/secrets:rw,z
       - ./compose.yaml:/work/compose.yaml:ro,z
+      - ./scripts/ensure-islandora-jwt-keypair.sh:/usr/local/lib/sitectl/ensure-islandora-jwt-keypair.sh:ro,z
       - ./scripts/initialize-compose.sh:/usr/local/lib/sitectl/initialize-compose.sh:ro,z
 
   database-init:
