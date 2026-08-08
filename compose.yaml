@@ -112,6 +112,8 @@ services:
       start_period: ${DRUPAL_HEALTHCHECK_START_PERIOD:-5m}
       retries: ${DRUPAL_HEALTHCHECK_RETRIES:-20}
     depends_on:
+      database-init:
+        condition: service_completed_successfully
       mariadb:
         condition: service_healthy
     secrets:
@@ -135,6 +137,10 @@ services:
         source: drupal-private-files
         target: /var/www/drupal/private
         type: volume
+      - read_only: true
+        source: ./scripts/drupal-media-storage-state.php
+        target: /var/www/drupal/drupal-media-storage-state.php
+        type: bind
       - drupal-solr-config:/opt/solr/server/solr/default:z,rw
 
   fits:
@@ -190,6 +196,27 @@ services:
       - ./secrets:/work/secrets:rw,z
       - ./compose.yaml:/work/compose.yaml:ro,z
 
+  database-init:
+    image: libops/base:3.2.2.0@sha256:851e17742b5fee57038855f46b1a46d2716c0012c5f3a4788b7e5c7bc12fed5e
+    restart: "no"
+    networks:
+      default:
+    environment:
+      DB_HOST: mariadb
+      DB_PORT: "3306"
+      DB_NAME: drupal_default
+      DB_USER: drupal_default
+      DB_CHARACTER_SET: utf8mb4
+      DB_COLLATION: utf8mb4_unicode_ci
+    secrets:
+      - source: DB_ROOT_PASSWORD
+      - source: DRUPAL_DEFAULT_DB_PASSWORD
+        target: DB_PASSWORD
+    entrypoint: /usr/local/bin/init-database.sh
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
   mariadb:
     <<: *common
     image: libops/mariadb:11.8@sha256:1b0f53f277cedf95e1fa6df25580de01dd2d0722b09f39fe0d93cfb6263e26f3
@@ -200,7 +227,7 @@ services:
 
   mergepdf:
     <<: *common
-    image: islandora/mergepdf:6.3.19
+    image: islandora/mergepdf:6.3.19@sha256:69f391d2058463f815c87b6703a39e38f5e61bf27b15b305ebf4bda64268110c
     secrets:
       - source: CERT_PUBLIC_KEY
       - source: CERT_AUTHORITY

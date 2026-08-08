@@ -55,8 +55,8 @@ sitectl validate
 Update the application base tag or pin that base by digest with [`sitectl image`](https://sitectl.libops.io/commands/image):
 
 ```bash
-sitectl image set --tag drupal=nginx-1.30.3-php84 --tag solr=9 --tag alpaca=2.4
-sitectl image set --build-arg drupal.BASE_IMAGE=libops/islandora:nginx-1.30.3-php84@sha256:...
+sitectl image set --tag drupal=nginx-1.30.4-php84 --tag solr=9 --tag alpaca=2.4
+sitectl image set --build-arg drupal.BASE_IMAGE=libops/islandora:nginx-1.30.4-php84@sha256:0320df015cab9951ff0ba1e5f30c0a18641398706c3af6fe9d27c29f02b21d2e
 ```
 
 Enable local development bind mounts with [`sitectl set`](https://sitectl.libops.io/commands/set):
@@ -111,6 +111,24 @@ This template starts from the upstream [ISLE Site Template](https://github.com/I
 Only MariaDB and the one-shot `database-init` service receive `DB_ROOT_PASSWORD`. The initializer idempotently creates the Drupal database and scoped user before the app starts; the long-running Drupal service receives only `DRUPAL_DEFAULT_DB_PASSWORD` as `DB_PASSWORD`. Optional components that need their own database follow the same scoped-credential boundary. Initialization also generates the dormant `TOMCAT_ADMIN_PASSWORD` credential so enabling Fedora later never falls back to a baked-in default.
 
 ActiveMQ, Alpaca, and Drupal share the generated `ACTIVEMQ_PASSWORD` through service-specific secret targets. Drupal receives it as `DRUPAL_DEFAULT_BROKER_PASSWORD` together with the non-secret `admin` broker username, so the rendered Islandora settings use authenticated STOMP rather than relying on a broker default.
+
+## Full-state recovery
+
+The ISLE plugin exposes the authoritative-versus-rebuildable recovery contract and creates a single checksummed bundle:
+
+```bash
+sitectl isle recovery plan
+sitectl isle recovery backup --output /var/backups/isle/site-$(date +%F).tar.gz
+sitectl isle recovery validate --input /var/backups/isle/site-2026-08-07.tar.gz
+```
+
+The bundle contains the Drupal database and public/private files, plus the Fcrepo database and object data when Fcrepo is enabled. It deliberately excludes customer secrets, source-controlled project configuration, Solr and Blazegraph indexes, ActiveMQ queues, IIIF caches, and generated derivatives. Recreate the target from the matching site Git revision and template provenance lock, restore secrets from the organization's Vault backup, and rebuild the excluded derived state after restore. The target and bundle must agree on whether Fedora is enabled.
+
+Copy bundles to encrypted off-host storage with retention that meets the customer's documented RPO. At least quarterly, restore a selected bundle into a disposable context, run `sitectl healthcheck` and `sitectl verify --strict`, rebuild indexes and required derivatives, and record the achieved RPO/RTO. A destructive restore requires confirmation:
+
+```bash
+sitectl isle recovery restore --input /var/backups/isle/site-2026-08-07.tar.gz
+```
 
 ## License
 

@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=libops/islandora:nginx-1.30.4-php84@sha256:0e20f5d10af9431c3140179ef6bf1e41299026043d1a98974180ab54a5330cef
+ARG BASE_IMAGE=libops/islandora:nginx-1.30.4-php84@sha256:0320df015cab9951ff0ba1e5f30c0a18641398706c3af6fe9d27c29f02b21d2e
 FROM ${BASE_IMAGE}
 
 ARG TARGETARCH
@@ -21,5 +21,6 @@ COPY --link web/modules/custom/ /var/www/drupal/web/modules/custom/
 COPY --link web/themes/custom/ /var/www/drupal/web/themes/custom/
 COPY --link drupal/rootfs/opt/ /opt/
 
-RUN chown -R nginx:nginx /var/www/drupal && \
+RUN mkdir -p /var/www/drupal/private && \
+    chown -R nginx:nginx /var/www/drupal && \
     cleanup.sh

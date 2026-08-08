@@ -2,8 +2,37 @@
 
 set -eou pipefail
 
-# shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]}")/profile.sh"
+site_url() {
+  sitectl stats --path . --format json | jq -er '.ingress.public_url'
+}
+
+fcrepo_enabled() {
+  docker compose config --services 2>/dev/null | grep -qx 'fcrepo'
+}
+
+container_url_for_url() {
+  local url="$1"
+  if fcrepo_enabled && [[ "${url}" =~ ^(https?)://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
+    printf '%s://drupal.internal%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[4]}"
+    return
+  fi
+  printf '%s\n' "${url}"
+}
+
+container_network_for_url() {
+  local url="${1:?url is required}"
+  local compose_project_name
+  local traefik_container
+  if [[ "${url}" =~ ^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?(/.*)?$ ]]; then
+    traefik_container="$(docker compose ps -q traefik)"
+    if [ -n "${traefik_container}" ]; then
+      printf 'container:%s\n' "${traefik_container}"
+      return
+    fi
+  fi
+  compose_project_name="$(docker compose config --format json | jq -er '.name')"
+  printf '%s_default\n' "${compose_project_name}"
+}
 
 if [ ! -d "islandora_workbench" ]; then
   git clone https://github.com/mjordan/islandora_workbench
@@ -13,7 +42,7 @@ if [ ! -d "islandora_demo_objects" ]; then
   git clone https://github.com/Islandora-Devops/islandora_demo_objects islandora_demo_objects
 fi
 
-URL="$(site_url)"
+URL="${SITECTL_DEMO_OBJECTS_URL:-$(site_url)}"
 WORKBENCH_URL="$(container_url_for_url "${URL}")"
 NETWORK="$(container_network_for_url "${WORKBENCH_URL}")"
 
@@ -35,6 +64,7 @@ docker build \
 tty_flag=( -i )
 [ -t 0 ] && tty_flag=( -it )
 
+set +e
 docker run \
   "${tty_flag[@]}" \
   --rm \
@@ -45,3 +75,16 @@ docker run \
   --name my-running-workbench \
   workbench-docker:latest \
   bash -lc "./workbench --config /islandora_demo_objects/create_islandora_objects.yml"
+workbench_status=$?
+set -e
+
+if [ "${workbench_status}" -ne 0 ]; then
+  printf 'Drupal media storage state:\n' >&2
+  docker compose exec -T drupal /var/www/drupal/vendor/bin/drush php:script /var/www/drupal/drupal-media-storage-state.php >&2 || true
+  workbench_log="islandora_workbench/workbench.log"
+  if [ -f "${workbench_log}" ]; then
+    printf 'Workbench failed; last 80 log lines:\n' >&2
+    tail -n 80 -- "${workbench_log}" >&2 || true
+  fi
+  exit "${workbench_status}"
+fi
