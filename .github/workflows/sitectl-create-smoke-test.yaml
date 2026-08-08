@@ -34,3 +34,4 @@ jobs:
       packages: sitectl sitectl-isle sitectl-drupal
       package-versions: sitectl=1.6.3 sitectl-isle=1.3.0 sitectl-drupal=1.2.0
       allow-unversioned-packages: false
+      run-verify: true
