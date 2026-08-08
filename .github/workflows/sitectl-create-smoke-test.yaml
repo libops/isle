@@ -41,10 +41,7 @@ jobs:
       plugin: isle
       create-definition: ${{ matrix.create_definition }}
       create-args: ${{ matrix.create_args }}
-      local-plugin-path: sitectl-isle
-      local-plugin-repository: libops/sitectl-isle
-      local-plugin-ref: 48759729ab47cbe11be4c363638538e0f919e23a
-      packages: sitectl sitectl-drupal
-      package-versions: sitectl=1.8.1 sitectl-drupal=1.3.0
+      packages: sitectl sitectl-isle sitectl-drupal
+      package-versions: sitectl=1.8.2 sitectl-isle=1.5.0 sitectl-drupal=1.3.0
       allow-unversioned-packages: false
       run-verify: true
