@@ -21,5 +21,6 @@ COPY --link web/modules/custom/ /var/www/drupal/web/modules/custom/
 COPY --link web/themes/custom/ /var/www/drupal/web/themes/custom/
 COPY --link drupal/rootfs/opt/ /opt/
 
-RUN chown -R nginx:nginx /var/www/drupal && \
+RUN mkdir -p /var/www/drupal/private && \
+    chown -R nginx:nginx /var/www/drupal && \
     cleanup.sh

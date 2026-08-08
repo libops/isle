@@ -79,6 +79,8 @@ workbench_status=$?
 set -e
 
 if [ "${workbench_status}" -ne 0 ]; then
+  printf 'Drupal media storage state:\n' >&2
+  docker compose exec -T drupal /var/www/drupal/vendor/bin/drush php:eval '$scheme = \Drupal::config("field.storage.media.field_media_image")->get("settings.uri_scheme"); $wrappers = \Drupal::service("stream_wrapper_manager")->getWrappers(); $flysystem = \Drupal\Core\Site\Settings::get("flysystem", []); $private = \Drupal\Core\Site\Settings::get("file_private_path", ""); print json_encode(["scheme" => $scheme, "registered" => isset($wrappers[$scheme]), "fedora_configured" => isset($flysystem["fedora"]), "private_path_exists" => is_string($private) && is_dir($private), "private_path_writable" => is_string($private) && is_writable($private)]);' >&2 || true
   workbench_log="islandora_workbench/workbench.log"
   if [ -f "${workbench_log}" ]; then
     printf 'Workbench failed; last 80 log lines:\n' >&2
