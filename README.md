@@ -10,7 +10,7 @@ Docs:
 ## Requirements
 
 - [sitectl](https://sitectl.libops.io/install) installed on the host that will run the site.
-- [`sitectl-isle`](https://github.com/libops/sitectl-isle) installed for ISLE create, validation, healthcheck, and helper commands.
+- [`sitectl-isle`](https://github.com/libops/sitectl-isle) 1.5.0 or newer installed for ISLE create, validation, healthcheck, and helper commands.
 - [`sitectl-drupal`](https://github.com/libops/sitectl-drupal) installed because ISLE includes the Drupal plugin surface.
 - Docker with the Compose v2 plugin installed on the same host.
 
@@ -32,6 +32,12 @@ The site is served through Traefik at `http://localhost` by default.
 ## Local image build
 
 The `drupal` service builds this checkout on top of the LibOps Islandora base image. The Dockerfile copies Composer lockfiles and assets before local recipes, modules, themes, config, and rootfs additions so Docker can reuse dependency layers when only site customizations change. During `sitectl create`, initialization prepares secrets, certificates, ownership, and rootfs permissions; the normal create build phase then builds the image once. Local builds use the platform selected by the Docker CLI and do not push images.
+
+The lifecycle programs in `scripts/` are part of the versioned template contract with `sitectl-isle`. They keep build, initialization, readiness, and container-side diagnostics reviewable as files and are mounted read-only when a container needs them. Preserve their paths when maintaining an institution-specific fork.
+
+Initialization preserves a valid existing Islandora RSA signing key, repairs or derives its public key, and replaces malformed legacy JWT material before the generic secret generator runs. Resetting initialization artifacts therefore uses the same keypair contract as a fresh `sitectl create`; it never creates unrelated private and public values.
+
+Before upgrading an older checkout to `sitectl-isle` 1.5.0, merge the lifecycle programs and read-only mounts from template v1.3.0. The deploy preflight rejects an incomplete legacy checkout before Compose stops a healthy site, then directs the operator to finish that template migration.
 
 Docker Compose derives the project name from the checkout directory, so independent forks do not share containers, networks, or named volumes by default. Set `COMPOSE_PROJECT_NAME` explicitly when a stable name is required. If an existing checkout previously relied on this template's fixed `isle-site-template` project name, set `COMPOSE_PROJECT_NAME=isle-site-template` before starting it to keep using its existing named volumes, or migrate those volumes deliberately.
 

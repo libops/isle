@@ -137,10 +137,8 @@ services:
         source: drupal-private-files
         target: /var/www/drupal/private
         type: volume
-      - read_only: true
-        source: ./scripts/drupal-media-storage-state.php
-        target: /var/www/drupal/drupal-media-storage-state.php
-        type: bind
+      - ./scripts/drupal-media-storage-state.php:/var/www/drupal/drupal-media-storage-state.php:ro,z
+      - ./scripts/drupal-wait-installed.sh:/usr/local/lib/sitectl/drupal-wait-installed.sh:ro,z
       - drupal-solr-config:/opt/solr/server/solr/default:z,rw
 
   fits:
@@ -176,7 +174,7 @@ services:
 
   init:
     entrypoint: /bin/bash
-    command: ["-euc", "generate-certs.sh && generate-compose-secrets.sh"]
+    command: ["/usr/local/lib/sitectl/initialize-compose.sh"]
     image: libops/base:3.2.2.0@sha256:851e17742b5fee57038855f46b1a46d2716c0012c5f3a4788b7e5c7bc12fed5e
     networks:
       default:
@@ -195,6 +193,8 @@ services:
       - ./certs:/work/certs:rw,z
       - ./secrets:/work/secrets:rw,z
       - ./compose.yaml:/work/compose.yaml:ro,z
+      - ./scripts/ensure-islandora-jwt-keypair.sh:/usr/local/lib/sitectl/ensure-islandora-jwt-keypair.sh:ro,z
+      - ./scripts/initialize-compose.sh:/usr/local/lib/sitectl/initialize-compose.sh:ro,z
 
   database-init:
     image: libops/base:3.2.2.0@sha256:851e17742b5fee57038855f46b1a46d2716c0012c5f3a4788b7e5c7bc12fed5e

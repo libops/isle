@@ -12,6 +12,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  jwt-keypair-reset:
+    name: Islandora JWT reset contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Verify repeatable JWT initialization
+        run: bash scripts/test-islandora-jwt-reset.sh
+
   create:
     name: sitectl create isle ${{ matrix.create_definition }}
     strategy:
@@ -33,7 +43,7 @@ jobs:
       create-args: ${{ matrix.create_args }}
       local-plugin-path: sitectl-isle
       local-plugin-repository: libops/sitectl-isle
-      local-plugin-ref: c0f3cdf4a9532152af29c3fe032eccd39238d55b
+      local-plugin-ref: 48759729ab47cbe11be4c363638538e0f919e23a
       packages: sitectl sitectl-drupal
       package-versions: sitectl=1.8.1 sitectl-drupal=1.3.0
       allow-unversioned-packages: false
