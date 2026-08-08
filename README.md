@@ -56,7 +56,7 @@ Update the application base tag or pin that base by digest with [`sitectl image`
 
 ```bash
 sitectl image set --tag drupal=nginx-1.30.4-php84 --tag solr=9 --tag alpaca=2.4
-sitectl image set --build-arg drupal.BASE_IMAGE=libops/islandora:nginx-1.30.4-php84@sha256:0e20f5d10af9431c3140179ef6bf1e41299026043d1a98974180ab54a5330cef
+sitectl image set --build-arg drupal.BASE_IMAGE=libops/islandora:nginx-1.30.4-php84@sha256:0320df015cab9951ff0ba1e5f30c0a18641398706c3af6fe9d27c29f02b21d2e
 ```
 
 Enable local development bind mounts with [`sitectl set`](https://sitectl.libops.io/commands/set):
