@@ -74,7 +74,7 @@ docker run \
   -v "$(pwd)/islandora_demo_objects":/islandora_demo_objects:z \
   --name my-running-workbench \
   workbench-docker:latest \
-  bash -lc "./workbench --config /islandora_demo_objects/create_islandora_objects.yml"
+  ./workbench --config /islandora_demo_objects/create_islandora_objects.yml
 workbench_status=$?
 set -e
 
