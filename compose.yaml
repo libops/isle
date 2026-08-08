@@ -137,6 +137,10 @@ services:
         source: drupal-private-files
         target: /var/www/drupal/private
         type: volume
+      - read_only: true
+        source: ./scripts/drupal-media-storage-state.php
+        target: /var/www/drupal/drupal-media-storage-state.php
+        type: bind
       - drupal-solr-config:/opt/solr/server/solr/default:z,rw
 
   fits:
