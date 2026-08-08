@@ -64,6 +64,7 @@ docker build \
 tty_flag=( -i )
 [ -t 0 ] && tty_flag=( -it )
 
+set +e
 docker run \
   "${tty_flag[@]}" \
   --rm \
@@ -74,3 +75,14 @@ docker run \
   --name my-running-workbench \
   workbench-docker:latest \
   bash -lc "./workbench --config /islandora_demo_objects/create_islandora_objects.yml"
+workbench_status=$?
+set -e
+
+if [ "${workbench_status}" -ne 0 ]; then
+  workbench_log="islandora_workbench/workbench.log"
+  if [ -f "${workbench_log}" ]; then
+    printf 'Workbench failed; last 80 log lines:\n' >&2
+    tail -n 80 -- "${workbench_log}" >&2 || true
+  fi
+  exit "${workbench_status}"
+fi
